@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Meeting - TeamTrack</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; font-weight: 500; }
+        .nav a:hover { color: #0056b3; }
+        .form-container { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .form-group textarea { height: 100px; resize: vertical; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+        .required { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{% url 'dashboard:home' %}">Dashboard</a>
+            <a href="{% url 'tasks:task_list' %}">Tasks</a>
+            <a href="{% url 'meetings:list' %}">Meetings</a>
+            <a href="{% url 'notifications:list' %}">Notifications</a>
+            <a href="{% url 'accounts:logout' %}">Logout</a>
+        </div>
+
+        <div class="header">
+            <h1>Create New Meeting</h1>
+            <p>Schedule a new meeting for your team.</p>
+        </div>
+
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="title">Meeting Title <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Optional meeting description..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduled_at">Scheduled Date & Time <span class="required">*</span></label>
+                    <input type="datetime-local" id="scheduled_at" name="scheduled_at" required>
+                </div>
+
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Create Meeting</button>
+                    <a href="{% url 'meetings:list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

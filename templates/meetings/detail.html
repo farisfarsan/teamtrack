@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meeting.title }} - TeamTrack</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; font-weight: 500; }
+        .nav a:hover { color: #0056b3; }
+        .meeting-detail { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .meeting-title { color: #333; margin-bottom: 20px; }
+        .meeting-info { margin-bottom: 20px; }
+        .info-item { margin-bottom: 10px; }
+        .info-label { font-weight: bold; color: #555; }
+        .info-value { color: #333; }
+        .meeting-description { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{% url 'dashboard:home' %}">Dashboard</a>
+            <a href="{% url 'tasks:task_list' %}">Tasks</a>
+            <a href="{% url 'meetings:list' %}">Meetings</a>
+            <a href="{% url 'notifications:list' %}">Notifications</a>
+            <a href="{% url 'accounts:logout' %}">Logout</a>
+        </div>
+
+        <div class="header">
+            <h1>Meeting Details</h1>
+        </div>
+
+        <div class="meeting-detail">
+            <h2 class="meeting-title">{{ meeting.title }}</h2>
+            
+            <div class="meeting-info">
+                <div class="info-item">
+                    <span class="info-label">Organized by:</span>
+                    <span class="info-value">{{ meeting.organizer.name }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Scheduled:</span>
+                    <span class="info-value">{{ meeting.scheduled_at|date:"F d, Y \a\t H:i" }}</span>
+                </div>
+                
+                <div class="info-item">
+                    <span class="info-label">Duration:</span>
+                    <span class="info-value">{{ meeting.duration_minutes }} minutes</span>
+                </div>
+                
+                {% if meeting.location %}
+                <div class="info-item">
+                    <span class="info-label">Location:</span>
+                    <span class="info-value">{{ meeting.location }}</span>
+                </div>
+                {% endif %}
+                
+                {% if meeting.meeting_url %}
+                <div class="info-item">
+                    <span class="info-label">Meeting URL:</span>
+                    <span class="info-value">
+                        <a href="{{ meeting.meeting_url }}" target="_blank">{{ meeting.meeting_url }}</a>
+                    </span>
+                </div>
+                {% endif %}
+                
+                <div class="info-item">
+                    <span class="info-label">Created:</span>
+                    <span class="info-value">{{ meeting.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+            
+            {% if meeting.description %}
+            <div class="meeting-description">
+                <h4>Description</h4>
+                <p>{{ meeting.description }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="info-item">
+                <span class="info-label">Attendees:</span>
+                <span class="info-value">
+                    {% for attendee in meeting.attendees.all %}
+                        {{ attendee.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        No attendees yet
+                    {% endfor %}
+                </span>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <a href="{% url 'meetings:list' %}" class="btn btn-secondary">Back to Meetings</a>
+                {% if meeting.meeting_url %}
+                    <a href="{{ meeting.meeting_url }}" target="_blank" class="btn btn-primary">Join Meeting</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

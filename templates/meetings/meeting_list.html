@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meetings - TeamTrack</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; font-weight: 500; }
+        .nav a:hover { color: #0056b3; }
+        .meeting-card { background: #fff; border: 1px solid #ddd; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .meeting-title { color: #333; margin-bottom: 10px; }
+        .meeting-meta { color: #666; font-size: 14px; margin: 5px 0; }
+        .empty-state { text-align: center; padding: 40px; color: #666; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #1e7e34; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{% url 'dashboard:home' %}">Dashboard</a>
+            <a href="{% url 'tasks:task_list' %}">Tasks</a>
+            <a href="{% url 'meetings:list' %}">Meetings</a>
+            <a href="{% url 'notifications:list' %}">Notifications</a>
+            <a href="{% url 'accounts:logout' %}">Logout</a>
+        </div>
+
+        <div class="header">
+            <h1>Meetings</h1>
+            <p>Welcome, {{ user.name }}! Here are your scheduled meetings.</p>
+            {% if user.team == 'PROJECT_MANAGER' %}
+            <a href="{% url 'meetings:create' %}" class="btn btn-success">Create New Meeting</a>
+            {% endif %}
+        </div>
+
+        <h2>Upcoming Meetings ({{ meetings.count }})</h2>
+        
+        {% if meetings %}
+            {% for meeting in meetings %}
+            <div class="meeting-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h3 class="meeting-title">{{ meeting.title }}</h3>
+                    <div class="text-end">
+                        <div class="attendance-badge">
+                            <span class="badge bg-info">{{ meeting.attendees.count }}/{{ meeting.organizer.team|length }}</span>
+                            <small class="text-muted d-block">Attendance</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="meeting-meta">
+                    <strong>Organized by:</strong> {{ meeting.organizer.name }}<br>
+                    <strong>Scheduled:</strong> {{ meeting.scheduled_at|date:"M d, Y H:i" }}<br>
+                    <strong>Team:</strong> {{ meeting.organizer.get_team_display }}<br>
+                </div>
+                {% if meeting.description %}
+                    <p>{{ meeting.description }}</p>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'meetings:detail' meeting.pk %}" class="btn btn-primary">View Details</a>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-success btn-sm" onclick="markAttendance({{ meeting.pk }})">
+                            <i class="fas fa-check"></i> Mark Attendance
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="shareWhatsApp({{ meeting.pk }})">
+                            <i class="fab fa-whatsapp"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <h3>No meetings scheduled</h3>
+                <p>You don't have any meetings scheduled at the moment.</p>
+                <a href="{% url 'meetings:create' %}" class="btn btn-success">Create Your First Meeting</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function markAttendance(meetingId) {
+            // Mark attendance for current user
+            fetch(`/meetings/${meetingId}/attendance/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'mark_attendance'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update attendance badge
+                    const badge = document.querySelector(`[onclick="markAttendance(${meetingId})"]`).closest('.meeting-card').querySelector('.attendance-badge .badge');
+                    badge.textContent = data.attendance_count;
+                    alert('Attendance marked successfully!');
+                } else {
+                    alert('Error marking attendance: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking attendance');
+            });
+        }
+
+        function shareWhatsApp(meetingId) {
+            // Get meeting details and create WhatsApp share link
+            const meetingCard = document.querySelector(`[onclick="shareWhatsApp(${meetingId})"]`).closest('.meeting-card');
+            const title = meetingCard.querySelector('.meeting-title').textContent;
+            const scheduled = meetingCard.querySelector('.meeting-meta').textContent.match(/Scheduled: (.+)/)[1];
+            const organizer = meetingCard.querySelector('.meeting-meta').textContent.match(/Organized by: (.+)/)[1];
+            
+            const message = `📅 Meeting Invitation\n\n` +
+                          `Title: ${title}\n` +
+                          `Organized by: ${organizer}\n` +
+                          `Scheduled: ${scheduled}\n` +
+                          `\nJoin the meeting: ${window.location.origin}/meetings/${meetingId}/`;
+            
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    </script>
+</body>
+</html>

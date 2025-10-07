@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}My Profile - TeamTrack{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-user"></i> My Profile
+                </h4>
+                <a href="{% url 'accounts:profile_update' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Full Name</h6>
+                            <p class="mb-0 fs-5">{{ user.name }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Email Address</h6>
+                            <p class="mb-0 fs-5">{{ user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Team</h6>
+                            <span class="badge bg-{% if user.team == 'PROJECT_MANAGER' %}danger{% elif user.team == 'DESIGN' %}info{% elif user.team == 'TECH' %}success{% elif user.team == 'MARKETING' %}purple{% else %}warning{% endif %} fs-6">
+                                {{ user.get_team_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Account Status</h6>
+                            <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %} fs-6">
+                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Member Since</h6>
+                            <p class="mb-0">{{ user.date_joined|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Last Login</h6>
+                            <p class="mb-0">
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"F d, Y H:i" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Stats</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h5 class="mb-0 text-primary">{{ user.tasks.count }}</h5>
+                            <small class="text-muted">Assigned Tasks</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="mb-0 text-success">{{ user.assigned_tasks.count }}</h5>
+                        <small class="text-muted">Created Tasks</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h5 class="mb-0 text-info">{{ user.organized_meetings.count }}</h5>
+                            <small class="text-muted">Organized Meetings</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="mb-0 text-warning">{{ user.notifications.count }}</h5>
+                        <small class="text-muted">Notifications</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:profile_update' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'tasks:task_create' %}" class="btn btn-outline-success">
+                        <i class="fas fa-plus"></i> Create Task
+                    </a>
+                    <a href="{% url 'meetings:create' %}" class="btn btn-outline-info">
+                        <i class="fas fa-calendar-plus"></i> Schedule Meeting
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

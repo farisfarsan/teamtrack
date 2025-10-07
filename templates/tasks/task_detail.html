@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }} - TeamTrack{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ task.title }}</h4>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i> Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% if user.team == 'PROJECT_MANAGER' %}
+                            <li><a class="dropdown-item" href="{% url 'tasks:task_update' task.pk %}">
+                                <i class="fas fa-edit"></i> Edit Task
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'tasks:task_delete' task.pk %}">
+                                <i class="fas fa-trash"></i> Delete Task
+                            </a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if task.description %}
+                    <div class="mb-4">
+                        <h6 class="text-muted">Description</h6>
+                        <p class="mb-0">{{ task.description|linebreaks }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Status</h6>
+                            <span class="badge bg-{% if task.status == 'COMPLETED' %}success{% elif task.status == 'IN_PROGRESS' %}primary{% elif task.status == 'PENDING' %}warning{% elif task.status == 'BLOCKED' %}danger{% else %}secondary{% endif %} fs-6">
+                                {{ task.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Priority</h6>
+                            <span class="badge bg-{% if task.priority == 'HIGH' %}danger{% elif task.priority == 'MEDIUM' %}warning{% else %}success{% endif %} fs-6">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Team</h6>
+                            <span class="badge bg-{% if task.team == 'PROJECT_MANAGER' %}danger{% elif task.team == 'DESIGN' %}info{% elif task.team == 'TECH' %}success{% elif task.team == 'MARKETING' %}purple{% else %}warning{% endif %} fs-6">
+                                {{ task.get_team_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Assigned To</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-user"></i> {{ task.assigned_to.name }}
+                                <small class="text-muted">({{ task.assigned_to.email }})</small>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Assigned By</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-user-tie"></i> {{ task.assigned_by.name }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if task.due_date %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">Due Date</h6>
+                        <p class="mb-0">
+                            <i class="fas fa-calendar"></i> {{ task.due_date|date:"F d, Y" }}
+                            {% if task.due_date < today %}
+                                <span class="badge bg-danger ms-2">Overdue</span>
+                            {% elif task.due_date == today %}
+                                <span class="badge bg-warning ms-2">Due Today</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <h6 class="text-muted">Created</h6>
+                    <p class="mb-0">
+                        <i class="fas fa-clock"></i> {{ task.created_at|date:"F d, Y \a\t H:i" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if user.team == 'PROJECT_MANAGER' %}
+                        <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit Task
+                        </a>
+                        <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete Task
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'tasks:task_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Tasks
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Task Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h5 class="mb-0 text-primary">{{ task.created_at|timesince }}</h5>
+                            <small class="text-muted">Created</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="mb-0 text-info">{{ task.assigned_to.role }}</h5>
+                        <small class="text-muted">Assignee Role</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

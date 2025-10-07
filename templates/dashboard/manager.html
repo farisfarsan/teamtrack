@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - TeamTrack</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .task-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .status-pending { background-color: #fff3cd; }
+        .status-in-progress { background-color: #d1ecf1; }
+        .status-completed { background-color: #d4edda; }
+        .nav { margin-bottom: 20px; }
+        .nav a { margin-right: 15px; text-decoration: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{% url 'dashboard:home' %}">Dashboard</a>
+        <a href="{% url 'tasks:task_list' %}">Tasks</a>
+        <a href="{% url 'meetings:list' %}">Meetings</a>
+        <a href="{% url 'notifications:list' %}">Notifications</a>
+        <a href="{% url 'accounts:logout' %}">Logout</a>
+    </div>
+
+    <div class="header">
+        <h1>Manager Dashboard</h1>
+        <p>Welcome, {{ user.name }}! Here are the tasks you've assigned.</p>
+    </div>
+
+    <h2>Assigned Tasks ({{ tasks.count }})</h2>
+    
+    {% if tasks %}
+        {% for task in tasks %}
+        <div class="task-card status-{{ task.status|lower|slugify }}">
+            <h3>{{ task.title }}</h3>
+            <p><strong>Assigned to:</strong> {{ task.assigned_to.name }}</p>
+            <p><strong>Status:</strong> {{ task.get_status_display }}</p>
+            <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
+            {% if task.due_date %}
+                <p><strong>Due:</strong> {{ task.due_date }}</p>
+            {% endif %}
+            {% if task.description %}
+                <p>{{ task.description }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No tasks assigned yet.</p>
+    {% endif %}
+</body>
+</html>

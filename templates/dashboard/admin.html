@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - TeamTrack{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Admin Dashboard</h2>
+                <p class="text-muted mb-0">Team-wise overview of all system activities</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'tasks:task_list' %}" class="btn btn-success">
+                    <i class="fas fa-list"></i> View All Tasks
+                </a>
+                {% if user.team == 'PROJECT_MANAGER' %}
+                <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Task
+                </a>
+                <a href="{% url 'meetings:create' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-calendar-plus"></i> Schedule Meeting
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ total_tasks }}</h3>
+                        <p class="mb-0">Total Tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ completed_tasks }}</h3>
+                        <p class="mb-0">Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ pending_tasks }}</h3>
+                        <p class="mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ total_users }}</h3>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team-wise Dashboard -->
+        <div class="row">
+            {% for team_name, stats in team_stats.items %}
+            <div class="col-lg-6 col-xl-4 mb-4">
+                <div class="card h-100 team-card" data-team="{{ team_name }}" style="cursor: pointer;">
+                    <div class="card-header bg-{% cycle 'danger' 'info' 'success' 'warning' 'purple' %} text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users"></i> {{ team_name }} Team
+                            <i class="fas fa-chevron-down float-end mt-1"></i>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="border-end">
+                                    <h4 class="mb-0 text-primary">{{ stats.total }}</h4>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border-end">
+                                    <h4 class="mb-0 text-warning">{{ stats.pending }}</h4>
+                                    <small class="text-muted">Pending</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="mb-0 text-success">{{ stats.completed }}</h4>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Team Members:</span>
+                                <span class="badge bg-secondary">{{ stats.users }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Team Tasks - Always Visible -->
+                        <div class="mb-3">
+                            <h6 class="text-muted">Team Tasks</h6>
+                            <div class="team-tasks" id="tasks-{{ team_name|slugify }}">
+                                {% for task in all_tasks %}
+                                    {% if task.get_team_display == team_name %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                        <div>
+                                            <strong class="small">{{ task.title|truncatechars:25 }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                Assigned to: {{ task.assigned_to.name }}
+                                                {% if task.due_date %}
+                                                    • Due: {{ task.due_date|date:"M d" }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-{% if task.status == 'COMPLETED' %}success{% elif task.status == 'IN_PROGRESS' %}primary{% elif task.status == 'PENDING' %}warning{% elif task.status == 'BLOCKED' %}danger{% else %}secondary{% endif %} mb-1">
+                                                {{ task.get_status_display }}
+                                            </span>
+                                            <br>
+                                            <span class="badge bg-{% if task.priority == 'HIGH' %}danger{% elif task.priority == 'MEDIUM' %}warning{% else %}success{% endif %}">
+                                                {{ task.get_priority_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <p class="text-muted small">No tasks for this team</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if user.team == 'PROJECT_MANAGER' %}
+                        <div class="d-grid">
+                            <a href="{% url 'tasks:task_create' %}?team={{ team_name|slugify }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Task
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Recent Tasks</h6>
+                                {% for task in recent_tasks %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>{{ task.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ task.assigned_to.name }} • {{ task.created_at|date:"M d, H:i" }}
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{% if task.team == 'PROJECT_MANAGER' %}danger{% elif task.team == 'DESIGN' %}info{% elif task.team == 'TECH' %}success{% elif task.team == 'MARKETING' %}purple{% else %}warning{% endif %}">
+                                            {{ task.get_team_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Recent Meetings</h6>
+                                {% for meeting in recent_meetings %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>{{ meeting.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ meeting.organizer.name }} • {{ meeting.scheduled_at|date:"M d, H:i" }}
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-info">{{ meeting.attendees.count }} attendees</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+.team-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.team-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.team-card.expanded {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.team-tasks {
+    max-height: 200px;
+    overflow-y: auto;
+}
+.task-detail {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make team cards clickable and show task details
+    const teamCards = document.querySelectorAll('.team-card');
+    
+    teamCards.forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            // Don't trigger if clicking on buttons or links
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') {
+                return;
+            }
+            
+            const teamName = this.dataset.team;
+            const tasksContainer = this.querySelector('.team-tasks');
+            
+            // Toggle expanded state
+            this.classList.toggle('expanded');
+            
+            // Show/hide detailed task information
+            if (this.classList.contains('expanded')) {
+                showTaskDetails(tasksContainer, teamName);
+            } else {
+                hideTaskDetails(tasksContainer);
+            }
+        });
+    });
+    
+    function showTaskDetails(container, teamName) {
+        // Add detailed task information
+        const tasks = container.querySelectorAll('.bg-light');
+        tasks.forEach(function(task) {
+            task.classList.add('task-detail');
+        });
+    }
+    
+    function hideTaskDetails(container) {
+        // Remove detailed styling
+        const tasks = container.querySelectorAll('.task-detail');
+        tasks.forEach(function(task) {
+            task.classList.remove('task-detail');
+        });
+    }
+});
+</script>
+{% endblock %}
