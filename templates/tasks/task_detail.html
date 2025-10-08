@@ -19,6 +19,10 @@
                             <li><a class="dropdown-item text-danger" href="{% url 'tasks:task_delete' task.pk %}">
                                 <i class="fas fa-trash"></i> Delete Task
                             </a></li>
+                        {% elif task.assigned_to == user %}
+                            <li><a class="dropdown-item" href="{% url 'tasks:task_update' task.pk %}">
+                                <i class="fas fa-edit"></i> Edit Task
+                            </a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -38,6 +42,25 @@
                             <span class="badge bg-{% if task.status == 'COMPLETED' %}success{% elif task.status == 'IN_PROGRESS' %}primary{% elif task.status == 'PENDING' %}warning{% elif task.status == 'BLOCKED' %}danger{% else %}secondary{% endif %} fs-6">
                                 {{ task.get_status_display }}
                             </span>
+                            
+                            <!-- Status Update Form for Assigned User -->
+                            {% if task.assigned_to == user %}
+                            <div class="mt-2">
+                                <form method="post" action="{% url 'tasks:task_status_update' task.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <div class="input-group input-group-sm">
+                                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            <option value="">Update Status</option>
+                                            {% for value, label in task.STATUS %}
+                                                <option value="{{ value }}" {% if task.status == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -98,6 +121,85 @@
                         <i class="fas fa-clock"></i> {{ task.created_at|date:"F d, Y \a\t H:i" }}
                     </p>
                 </div>
+                
+                {% if task.updated_at != task.created_at %}
+                <div class="mb-3">
+                    <h6 class="text-muted">Last Updated</h6>
+                    <p class="mb-0">
+                        <i class="fas fa-edit"></i> {{ task.updated_at|date:"F d, Y \a\t H:i" }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments"></i> Progress Updates & Comments
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Add Comment Form -->
+                {% if task.assigned_to == user or task.assigned_by == user %}
+                <form method="post" action="{% url 'tasks:task_add_comment' task.pk %}" class="mb-4">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="comment_type" class="form-label">Comment Type</label>
+                                <select class="form-select" id="comment_type" name="comment_type">
+                                    {% for value, label in comment_types %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control" id="message" name="message" rows="3" 
+                                          placeholder="Add your progress update, question, or comment..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Add Comment
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+                
+                <!-- Comments List -->
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="card mb-3 {% if comment.comment_type == 'PROGRESS' %}border-success{% elif comment.comment_type == 'BLOCKER' %}border-danger{% elif comment.comment_type == 'COMPLETION' %}border-primary{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user"></i> {{ comment.author.name }}
+                                        <span class="badge bg-{% if comment.comment_type == 'PROGRESS' %}success{% elif comment.comment_type == 'BLOCKER' %}danger{% elif comment.comment_type == 'COMPLETION' %}primary{% elif comment.comment_type == 'QUESTION' %}warning{% else %}secondary{% endif %} ms-2">
+                                            {{ comment.get_comment_type_display }}
+                                        </span>
+                                    </h6>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> {{ comment.created_at|date:"M d, Y H:i" }}
+                                </small>
+                            </div>
+                            <p class="mb-0">{{ comment.message|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No comments yet. Be the first to add a progress update!</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -115,6 +217,10 @@
                         </a>
                         <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-outline-danger">
                             <i class="fas fa-trash"></i> Delete Task
+                        </a>
+                    {% elif task.assigned_to == user %}
+                        <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit Task
                         </a>
                     {% endif %}
                     <a href="{% url 'tasks:task_list' %}" class="btn btn-outline-secondary">

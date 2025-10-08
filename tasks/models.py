@@ -22,4 +22,27 @@ class Task(models.Model):
     priority = models.CharField(max_length=20,choices=PRIORITY,default="MEDIUM")
     due_date = models.DateField(null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
     def __str__(self): return self.title
+
+class TaskComment(models.Model):
+    COMMENT_TYPES = [
+        ("PROGRESS", "Progress Update"),
+        ("QUESTION", "Question"),
+        ("BLOCKER", "Blocker"),
+        ("COMPLETION", "Completion Note"),
+        ("GENERAL", "General Comment")
+    ]
+    
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment_type = models.CharField(max_length=20, choices=COMMENT_TYPES, default="GENERAL")
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.author.name} - {self.get_comment_type_display()}"

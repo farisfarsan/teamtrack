@@ -1,53 +1,97 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Dashboard - TeamTrack</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .task-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        .status-pending { background-color: #fff3cd; }
-        .status-in-progress { background-color: #d1ecf1; }
-        .status-completed { background-color: #d4edda; }
-        .nav { margin-bottom: 20px; }
-        .nav a { margin-right: 15px; text-decoration: none; color: #007bff; }
-    </style>
-</head>
-<body>
-    <div class="nav">
-        <a href="{% url 'dashboard:home' %}">Dashboard</a>
-        <a href="{% url 'tasks:task_list' %}">Tasks</a>
-        <a href="{% url 'meetings:list' %}">Meetings</a>
-        <a href="{% url 'notifications:list' %}">Notifications</a>
-        <a href="{% url 'accounts:logout' %}">Logout</a>
-    </div>
-
-    <div class="header">
-        <h1>Manager Dashboard</h1>
-        <p>Welcome, {{ user.name }}! Here are the tasks you've assigned.</p>
-    </div>
-
-    <h2>Assigned Tasks ({{ tasks.count }})</h2>
-    
-    {% if tasks %}
-        {% for task in tasks %}
-        <div class="task-card status-{{ task.status|lower|slugify }}">
-            <h3>{{ task.title }}</h3>
-            <p><strong>Assigned to:</strong> {{ task.assigned_to.name }}</p>
-            <p><strong>Status:</strong> {{ task.get_status_display }}</p>
-            <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
-            {% if task.due_date %}
-                <p><strong>Due:</strong> {{ task.due_date }}</p>
-            {% endif %}
-            {% if task.description %}
-                <p>{{ task.description }}</p>
-            {% endif %}
+{% extends "base.html" %}
+{% block title %}Manager Dashboard - TeamTrack{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Manager Dashboard</h2>
+                <p class="text-muted mb-0">Welcome, {{ user.name }}! Here are the tasks you've assigned.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Task
+                </a>
+                <a href="{% url 'meetings:create' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-calendar-plus"></i> Schedule Meeting
+                </a>
+            </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <p>No tasks assigned yet.</p>
-    {% endif %}
-</body>
-</html>
+
+        <h3>Assigned Tasks ({{ tasks.count }})</h3>
+        
+        {% if tasks %}
+            <div class="row">
+                {% for task in tasks %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card task-card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">{{ task.title }}</h5>
+                                <span class="badge bg-{% if task.status == 'COMPLETED' %}success{% elif task.status == 'IN_PROGRESS' %}primary{% elif task.status == 'PENDING' %}warning{% elif task.status == 'BLOCKED' %}danger{% else %}secondary{% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            {% if task.description %}
+                                <p class="card-text text-muted small">{{ task.description|truncatewords:15 }}</p>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-{% if task.priority == 'HIGH' %}danger{% elif task.priority == 'MEDIUM' %}warning{% else %}success{% endif %} me-1">
+                                    {{ task.get_priority_display }}
+                                </span>
+                                <span class="badge bg-{% if task.team == 'PROJECT_MANAGER' %}danger{% elif task.team == 'DESIGN' %}info{% elif task.team == 'TECH' %}success{% elif task.team == 'MARKETING' %}purple{% else %}warning{% endif %}">
+                                    {{ task.get_team_display }}
+                                </span>
+                            </div>
+                            
+                            <div class="small text-muted">
+                                <div class="mb-1">
+                                    <i class="fas fa-user"></i> Assigned to: {{ task.assigned_to.name }}
+                                </div>
+                                {% if task.due_date %}
+                                    <div class="mb-1">
+                                        <i class="fas fa-calendar"></i> Due: {{ task.due_date|date:"M d, Y" }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <i class="fas fa-clock"></i> Created: {{ task.created_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-tasks fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">No tasks assigned yet</h4>
+                <p class="text-muted">You haven't assigned any tasks to team members yet.</p>
+                <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Your First Task
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.task-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+</style>
+{% endblock %}

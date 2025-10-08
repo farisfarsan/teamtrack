@@ -1,110 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ meeting.title }} - TeamTrack</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; font-weight: 500; }
-        .nav a:hover { color: #0056b3; }
-        .meeting-detail { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .meeting-title { color: #333; margin-bottom: 20px; }
-        .meeting-info { margin-bottom: 20px; }
-        .info-item { margin-bottom: 10px; }
-        .info-label { font-weight: bold; color: #555; }
-        .info-value { color: #333; }
-        .meeting-description { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-secondary:hover { background-color: #545b62; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="nav">
-            <a href="{% url 'dashboard:home' %}">Dashboard</a>
-            <a href="{% url 'tasks:task_list' %}">Tasks</a>
-            <a href="{% url 'meetings:list' %}">Meetings</a>
-            <a href="{% url 'notifications:list' %}">Notifications</a>
-            <a href="{% url 'accounts:logout' %}">Logout</a>
-        </div>
+{% extends "base.html" %}
+{% block title %}{{ meeting.title }} - TeamTrack{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ meeting.title }}</h4>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i> Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'meetings:list' %}">
+                            <i class="fas fa-arrow-left"></i> Back to Meetings
+                        </a></li>
+                        {% if meeting.meeting_url %}
+                        <li><a class="dropdown-item" href="{{ meeting.meeting_url }}" target="_blank">
+                            <i class="fas fa-video"></i> Join Meeting
+                        </a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Organized by</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-user-tie"></i> {{ meeting.organizer.name }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Scheduled</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-calendar"></i> {{ meeting.scheduled_at|date:"F d, Y \a\t H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="header">
-            <h1>Meeting Details</h1>
-        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Duration</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-clock"></i> {{ meeting.duration_minutes }} minutes
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-muted">Created</h6>
+                            <p class="mb-0">
+                                <i class="fas fa-plus-circle"></i> {{ meeting.created_at|date:"M d, Y H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="meeting-detail">
-            <h2 class="meeting-title">{{ meeting.title }}</h2>
-            
-            <div class="meeting-info">
-                <div class="info-item">
-                    <span class="info-label">Organized by:</span>
-                    <span class="info-value">{{ meeting.organizer.name }}</span>
-                </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Scheduled:</span>
-                    <span class="info-value">{{ meeting.scheduled_at|date:"F d, Y \a\t H:i" }}</span>
-                </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Duration:</span>
-                    <span class="info-value">{{ meeting.duration_minutes }} minutes</span>
-                </div>
-                
                 {% if meeting.location %}
-                <div class="info-item">
-                    <span class="info-label">Location:</span>
-                    <span class="info-value">{{ meeting.location }}</span>
+                <div class="mb-3">
+                    <h6 class="text-muted">Location</h6>
+                    <p class="mb-0">
+                        <i class="fas fa-map-marker-alt"></i> {{ meeting.location }}
+                    </p>
                 </div>
                 {% endif %}
-                
+
                 {% if meeting.meeting_url %}
-                <div class="info-item">
-                    <span class="info-label">Meeting URL:</span>
-                    <span class="info-value">
-                        <a href="{{ meeting.meeting_url }}" target="_blank">{{ meeting.meeting_url }}</a>
-                    </span>
+                <div class="mb-3">
+                    <h6 class="text-muted">Meeting URL</h6>
+                    <p class="mb-0">
+                        <i class="fas fa-link"></i> 
+                        <a href="{{ meeting.meeting_url }}" target="_blank" class="text-decoration-none">
+                            {{ meeting.meeting_url }}
+                        </a>
+                    </p>
                 </div>
                 {% endif %}
-                
-                <div class="info-item">
-                    <span class="info-label">Created:</span>
-                    <span class="info-value">{{ meeting.created_at|date:"M d, Y H:i" }}</span>
+
+                <div class="mb-3">
+                    <h6 class="text-muted">Attendees</h6>
+                    <p class="mb-0">
+                        <i class="fas fa-users"></i>
+                        {% for attendee in meeting.attendees.all %}
+                            {{ attendee.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            No attendees yet
+                        {% endfor %}
+                    </p>
                 </div>
-            </div>
-            
-            {% if meeting.description %}
-            <div class="meeting-description">
-                <h4>Description</h4>
-                <p>{{ meeting.description }}</p>
-            </div>
-            {% endif %}
-            
-            <div class="info-item">
-                <span class="info-label">Attendees:</span>
-                <span class="info-value">
-                    {% for attendee in meeting.attendees.all %}
-                        {{ attendee.name }}{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        No attendees yet
-                    {% endfor %}
-                </span>
-            </div>
-            
-            <div style="margin-top: 30px;">
-                <a href="{% url 'meetings:list' %}" class="btn btn-secondary">Back to Meetings</a>
-                {% if meeting.meeting_url %}
-                    <a href="{{ meeting.meeting_url }}" target="_blank" class="btn btn-primary">Join Meeting</a>
+
+                {% if meeting.description %}
+                <div class="mb-4">
+                    <h6 class="text-muted">Description</h6>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p class="mb-0">{{ meeting.description|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</body>
-</html>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'meetings:list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Meetings
+                    </a>
+                    {% if meeting.meeting_url %}
+                        <a href="{{ meeting.meeting_url }}" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-video"></i> Join Meeting
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Meeting Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h5 class="mb-0 text-primary">{{ meeting.attendees.count }}</h5>
+                            <small class="text-muted">Attendees</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="mb-0 text-info">{{ meeting.duration_minutes }}m</h5>
+                        <small class="text-muted">Duration</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

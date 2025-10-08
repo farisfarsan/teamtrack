@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
-from .models import Task
+from django.http import JsonResponse
+from .models import Task, TaskComment
 from accounts.models import User
 from notifications.models import Notification
 
@@ -14,8 +15,11 @@ def task_list(request):
     status_filter = request.GET.get('status', '')
     priority_filter = request.GET.get('priority', '')
     
-    # Base queryset - show tasks assigned to current user
-    tasks = Task.objects.filter(assigned_to=request.user)
+    # Base queryset - show tasks assigned to current user, or all tasks if Project Manager
+    if request.user.team == 'PROJECT_MANAGER':
+        tasks = Task.objects.all()
+    else:
+        tasks = Task.objects.filter(assigned_to=request.user)
     
     # Apply filters
     if search_query:
@@ -103,20 +107,31 @@ def task_create(request):
 @login_required
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
-    # Only allow viewing tasks assigned to current user or assigned by current user
-    if task.assigned_to != request.user and task.assigned_by != request.user:
+    # Allow viewing tasks assigned to current user, assigned by current user, or if user is Project Manager
+    if (task.assigned_to != request.user and 
+        task.assigned_by != request.user and 
+        request.user.team != 'PROJECT_MANAGER'):
         messages.error(request, 'You do not have permission to view this task.')
         return redirect('tasks:task_list')
     
-    return render(request, 'tasks/task_detail.html', {'task': task})
+    # Get comments for this task
+    comments = task.comments.all()
+    
+    context = {
+        'task': task,
+        'comments': comments,
+        'comment_types': TaskComment.COMMENT_TYPES,
+    }
+    return render(request, 'tasks/task_detail.html', context)
 
 @login_required
 def task_update(request, pk):
     task = get_object_or_404(Task, pk=pk)
     
-    # Only Project Managers can update tasks
-    if request.user.team != 'PROJECT_MANAGER':
-        messages.error(request, 'Only Project Managers can edit tasks.')
+    # Only Project Managers can update tasks, or users can update their own assigned tasks
+    if (request.user.team != 'PROJECT_MANAGER' and 
+        task.assigned_to != request.user):
+        messages.error(request, 'You can only edit tasks assigned to you or you must be a Project Manager.')
         return redirect('tasks:task_list')
     
     if request.method == 'POST':
@@ -173,3 +188,75 @@ def task_delete(request, pk):
         return redirect('tasks:task_list')
     
     return render(request, 'tasks/task_delete.html', {'task': task})
+
+@login_required
+def task_status_update(request, pk):
+    """Allow team members to update their task status"""
+    task = get_object_or_404(Task, pk=pk)
+    
+    # Only allow the assigned user to update status
+    if task.assigned_to != request.user:
+        messages.error(request, 'You can only update tasks assigned to you.')
+        return redirect('tasks:task_detail', pk=pk)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in [choice[0] for choice in Task.STATUS]:
+            old_status = task.status
+            task.status = new_status
+            task.save()
+            
+            # Create notification for the manager
+            if task.assigned_by:
+                Notification.objects.create(
+                    recipient=task.assigned_by,
+                    message=f'Task "{task.title}" status changed from {old_status} to {new_status} by {request.user.name}'
+                )
+            
+            messages.success(request, f'Task status updated to {task.get_status_display()}')
+        else:
+            messages.error(request, 'Invalid status selected.')
+    
+    return redirect('tasks:task_detail', pk=pk)
+
+@login_required
+def task_add_comment(request, pk):
+    """Allow team members to add comments to their tasks"""
+    task = get_object_or_404(Task, pk=pk)
+    
+    # Only allow the assigned user or manager to add comments
+    if task.assigned_to != request.user and task.assigned_by != request.user:
+        messages.error(request, 'You can only comment on tasks assigned to you or created by you.')
+        return redirect('tasks:task_detail', pk=pk)
+    
+    if request.method == 'POST':
+        comment_type = request.POST.get('comment_type', 'GENERAL')
+        message = request.POST.get('message', '').strip()
+        
+        if message:
+            comment = TaskComment.objects.create(
+                task=task,
+                author=request.user,
+                comment_type=comment_type,
+                message=message
+            )
+            
+            # Create notification for the other party
+            if task.assigned_to == request.user and task.assigned_by:
+                # Assigned user commented, notify manager
+                Notification.objects.create(
+                    recipient=task.assigned_by,
+                    message=f'New comment on task "{task.title}" by {request.user.name}: {message[:50]}...'
+                )
+            elif task.assigned_by == request.user and task.assigned_to:
+                # Manager commented, notify assigned user
+                Notification.objects.create(
+                    recipient=task.assigned_to,
+                    message=f'New comment on task "{task.title}" by {request.user.name}: {message[:50]}...'
+                )
+            
+            messages.success(request, 'Comment added successfully!')
+        else:
+            messages.error(request, 'Please enter a comment message.')
+    
+    return redirect('tasks:task_detail', pk=pk)

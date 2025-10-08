@@ -1,67 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications - TeamTrack</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; font-weight: 500; }
-        .nav a:hover { color: #0056b3; }
-        .notification-card { background: #fff; border: 1px solid #ddd; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .notification-card.unread { border-left: 4px solid #007bff; background-color: #f8f9ff; }
-        .notification-card.read { border-left: 4px solid #6c757d; opacity: 0.7; }
-        .notification-message { color: #333; margin-bottom: 10px; }
-        .notification-time { color: #666; font-size: 14px; }
-        .empty-state { text-align: center; padding: 40px; color: #666; }
-        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-secondary:hover { background-color: #545b62; }
-        .mark-read-btn { float: right; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="nav">
-            <a href="{% url 'dashboard:home' %}">Dashboard</a>
-            <a href="{% url 'tasks:task_list' %}">Tasks</a>
-            <a href="{% url 'meetings:list' %}">Meetings</a>
-            <a href="{% url 'notifications:list' %}">Notifications</a>
-            <a href="{% url 'accounts:logout' %}">Logout</a>
+{% extends "base.html" %}
+{% block title %}Notifications - TeamTrack{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Notifications</h2>
+                <p class="text-muted mb-0">Welcome, {{ user.name }}! Here are your notifications.</p>
+            </div>
         </div>
 
-        <div class="header">
-            <h1>Notifications</h1>
-            <p>Welcome, {{ user.name }}! Here are your notifications.</p>
-        </div>
-
-        <h2>Your Notifications ({{ notifications.count }})</h2>
+        <h3>Your Notifications ({{ notifications.count }})</h3>
         
         {% if notifications %}
-            {% for notification in notifications %}
-            <div class="notification-card {% if notification.is_read %}read{% else %}unread{% endif %}">
-                <div class="notification-message">
-                    {{ notification.message }}
+            <div class="row">
+                {% for notification in notifications %}
+                <div class="col-12 mb-3">
+                    <div class="card notification-card {% if notification.is_read %}border-start border-secondary{% else %}border-start border-primary bg-light{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <p class="mb-2 {% if notification.is_read %}text-muted{% else %}text-dark{% endif %}">
+                                        {{ notification.message }}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ notification.created_at|date:"M d, Y H:i" }}
+                                    </small>
+                                </div>
+                                {% if not notification.is_read %}
+                                    <a href="{% url 'notifications:mark_read' notification.pk %}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-check"></i> Mark as Read
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="notification-time">
-                    {{ notification.created_at|date:"M d, Y H:i" }}
-                    {% if not notification.is_read %}
-                        <a href="{% url 'notifications:mark_read' notification.pk %}" class="btn btn-secondary mark-read-btn">Mark as Read</a>
-                    {% endif %}
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         {% else %}
-            <div class="empty-state">
-                <h3>No notifications</h3>
-                <p>You don't have any notifications at the moment.</p>
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-bell fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">No notifications</h4>
+                <p class="text-muted">You don't have any notifications at the moment.</p>
             </div>
         {% endif %}
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
