@@ -13,45 +13,45 @@ def meeting_list(request):
         messages.error(request, 'Only Project Managers can access meetings.')
         return redirect('dashboard:home')
     
+    # Get all team members for attendance sessions
+    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+    
+    # Get recent meetings for attendance sessions
     meetings = Meeting.objects.all().order_by('-scheduled_at')
-    return render(request, 'meetings/meeting_list.html', {'meetings': meetings})
+    
+    context = {
+        'meetings': meetings,
+        'team_members': team_members,
+        'total_members': team_members.count()
+    }
+    return render(request, 'meetings/meeting_list.html', context)
 
 @login_required
-def create_meeting(request):
-    # Only Project Managers can create meetings
+def create_attendance_session(request):
+    """Create a new attendance session for team members"""
     if request.user.team != 'PROJECT_MANAGER':
-        messages.error(request, 'Only Project Managers can create meetings.')
+        messages.error(request, 'Only Project Managers can create attendance sessions.')
         return redirect('meetings:list')
     
     if request.method == 'POST':
-        # Basic meeting creation logic
         title = request.POST.get('title')
         description = request.POST.get('description', '')
         scheduled_at = request.POST.get('scheduled_at')
         
         if title and scheduled_at:
+            # Create a simple meeting for attendance tracking
             meeting = Meeting.objects.create(
                 title=title,
                 description=description,
                 organizer=request.user,
                 scheduled_at=scheduled_at
             )
-            meeting.attendees.add(request.user)
             
-            # Send notifications to all team members
-            from notifications.models import Notification
-            from accounts.models import User
+            # Add all team members as attendees
+            team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+            meeting.attendees.set(team_members)
             
-            # Get all team members (excluding the organizer)
-            team_members = User.objects.filter(is_active=True).exclude(id=request.user.id)
-            
-            for member in team_members:
-                Notification.objects.create(
-                    recipient=member,
-                    message=f'New meeting scheduled: "{meeting.title}" by {request.user.name} on {meeting.scheduled_at.strftime("%B %d, %Y at %H:%M")}'
-                )
-            
-            messages.success(request, f'Meeting created successfully! Notifications sent to {team_members.count()} team members.')
+            messages.success(request, f'Attendance session "{meeting.title}" created for {team_members.count()} team members.')
             return redirect('meetings:detail', pk=meeting.pk)
         else:
             messages.error(request, 'Please fill in all required fields.')
