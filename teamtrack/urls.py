@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from django.conf import settings
+from django.conf.urls.static import static
 
 def root_redirect(request):
     """Redirect root URL to dashboard"""
@@ -24,3 +26,6 @@ urlpatterns = [
     path("meetings/", include(("meetings.urls", "meetings"), namespace="meetings")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
 ]
+
+# Serve media files in development and production
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
