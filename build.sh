@@ -2,8 +2,11 @@
 # exit on error
 set -o errexit
 
-# Install dependencies
-pip install -r requirements.txt
+# Upgrade pip first
+pip install --upgrade pip
+
+# Install dependencies with better error handling
+pip install -r requirements.txt --no-cache-dir
 
 # Collect static files
 python manage.py collectstatic --noinput --settings=teamtrack.settings_render
