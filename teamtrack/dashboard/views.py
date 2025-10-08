@@ -5,7 +5,6 @@ from django.utils import timezone
 from datetime import timedelta
 from accounts.models import User
 from tasks.models import Task
-from meetings.models import Meeting, MeetingAttendance
 from notifications.models import Notification
 
 @login_required
@@ -119,16 +118,6 @@ def member_dashboard(request):
         status="PENDING"
     ).order_by('-created_at')
     
-    # User's attendance information
-    user_attendance_records = MeetingAttendance.objects.filter(user=request.user)
-    total_sessions = user_attendance_records.count()
-    present_sessions = user_attendance_records.filter(present=True).count()
-    absent_sessions = user_attendance_records.filter(present=False).count()
-    attendance_rate = (present_sessions / total_sessions * 100) if total_sessions > 0 else 0
-    
-    # Recent attendance sessions for this user
-    recent_attendance = user_attendance_records.order_by('-marked_at')[:5]
-    
     # Recent notifications
     recent_notifications = Notification.objects.filter(
         recipient=request.user
@@ -150,11 +139,5 @@ def member_dashboard(request):
         "team_tasks": team_tasks,
         "all_team_tasks": all_team_tasks,
         "team_name": request.user.get_team_display(),
-        # Attendance data
-        "total_sessions": total_sessions,
-        "present_sessions": present_sessions,
-        "absent_sessions": absent_sessions,
-        "attendance_rate": round(attendance_rate, 1),
-        "recent_attendance": recent_attendance,
     }
     return render(request,"dashboard/member.html", data)
