@@ -17,7 +17,10 @@
                     <i class="fas fa-plus"></i> Create Task
                 </a>
                 <a href="{% url 'meetings:create' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-calendar-plus"></i> Schedule Meeting
+                    <i class="fas fa-users"></i> Create Attendance Session
+                </a>
+                <a href="{% url 'meetings:attendance_stats' %}" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> Attendance Stats
                 </a>
                 {% endif %}
             </div>
@@ -36,24 +39,111 @@
             <div class="col-md-3">
                 <div class="card bg-success text-white">
                     <div class="card-body text-center">
-                        <h3 class="mb-0">{{ completed_tasks }}</h3>
-                        <p class="mb-0">Completed</p>
+                        <h3 class="mb-0">{{ team_members.count }}</h3>
+                        <p class="mb-0">Team Members</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card bg-warning text-white">
                     <div class="card-body text-center">
-                        <h3 class="mb-0">{{ pending_tasks }}</h3>
-                        <p class="mb-0">Pending</p>
+                        <h3 class="mb-0">{{ total_sessions }}</h3>
+                        <p class="mb-0">Attendance Sessions</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card bg-info text-white">
                     <div class="card-body text-center">
-                        <h3 class="mb-0">{{ total_users }}</h3>
-                        <p class="mb-0">Total Users</p>
+                        <h3 class="mb-0">{{ active_users }}</h3>
+                        <p class="mb-0">Active Users</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Member Attendance Overview -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users"></i> Team Member Attendance Overview
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if team_member_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Team Member</th>
+                                        <th>Team</th>
+                                        <th>Sessions Attended</th>
+                                        <th>Total Sessions</th>
+                                        <th>Attendance Rate</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for member_stat in team_member_stats %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    {{ member_stat.member.name|first|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ member_stat.member.name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ member_stat.member.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ member_stat.member.get_team_display }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ member_stat.present_sessions }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ member_stat.total_sessions }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="width: 100px;">
+                                                <div class="progress-bar 
+                                                    {% if member_stat.attendance_rate >= 80 %}bg-success
+                                                    {% elif member_stat.attendance_rate >= 60 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    role="progressbar" 
+                                                    style="width: {{ member_stat.attendance_rate }}%"
+                                                    aria-valuenow="{{ member_stat.attendance_rate }}" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                    {{ member_stat.attendance_rate }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'meetings:attendance_stats' %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-chart-bar"></i> View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No attendance data yet</h5>
+                            <p class="text-muted">Create attendance sessions to start tracking team member attendance.</p>
+                            <a href="{% url 'meetings:create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create First Session
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -173,20 +263,22 @@
                                 {% endfor %}
                             </div>
                             <div class="col-md-6">
-                                <h6 class="text-muted">Recent Meetings</h6>
-                                {% for meeting in recent_meetings %}
+                                <h6 class="text-muted">Recent Attendance Sessions</h6>
+                                {% for session in recent_sessions %}
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
-                                        <strong>{{ meeting.title }}</strong>
+                                        <strong>{{ session.title }}</strong>
                                         <br>
                                         <small class="text-muted">
-                                            {{ meeting.organizer.name }} • {{ meeting.scheduled_at|date:"M d, H:i" }}
+                                            {{ session.organizer.name }} • {{ session.scheduled_at|date:"M d, H:i" }}
                                         </small>
                                     </div>
                                     <div class="text-end">
-                                        <span class="badge bg-info">{{ meeting.attendees.count }} attendees</span>
+                                        <span class="badge bg-info">{{ session.get_attendance_stats }}</span>
                                     </div>
                                 </div>
+                                {% empty %}
+                                <p class="text-muted small">No attendance sessions yet</p>
                                 {% endfor %}
                             </div>
                         </div>
@@ -222,6 +314,19 @@
     padding: 10px;
     margin: 5px 0;
     border-radius: 4px;
+}
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: bold;
+}
+.progress {
+    height: 20px;
+}
+.progress-bar {
+    font-size: 12px;
+    line-height: 20px;
 }
 </style>
 

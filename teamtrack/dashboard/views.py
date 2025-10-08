@@ -5,7 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from accounts.models import User
 from tasks.models import Task
-from meetings.models import Meeting
+from meetings.models import Meeting, MeetingAttendance
 from notifications.models import Notification
 
 @login_required
@@ -45,16 +45,29 @@ def admin_dashboard(request):
     # User analytics
     total_users = User.objects.count()
     active_users = User.objects.filter(is_active=True).count()
+    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
     
-    # Meeting analytics
-    total_meetings = Meeting.objects.count()
-    upcoming_meetings = Meeting.objects.filter(
-        scheduled_at__gte=timezone.now()
-    ).count()
+    # Attendance analytics
+    total_sessions = Meeting.objects.count()
+    recent_sessions = Meeting.objects.order_by('-scheduled_at')[:5]
+    
+    # Team member attendance overview
+    team_member_stats = []
+    for member in team_members:
+        attendance_records = MeetingAttendance.objects.filter(user=member)
+        total_sessions_for_member = attendance_records.count()
+        present_sessions = attendance_records.filter(present=True).count()
+        attendance_rate = (present_sessions / total_sessions_for_member * 100) if total_sessions_for_member > 0 else 0
+        
+        team_member_stats.append({
+            'member': member,
+            'total_sessions': total_sessions_for_member,
+            'present_sessions': present_sessions,
+            'attendance_rate': round(attendance_rate, 1)
+        })
     
     # Recent activity - ALL tasks
     recent_tasks = all_tasks.order_by('-created_at')[:10]
-    recent_meetings = Meeting.objects.order_by('-created_at')[:5]
     
     # All tasks for admin view
     all_tasks_list = all_tasks.order_by('-created_at')
@@ -68,10 +81,11 @@ def admin_dashboard(request):
         "overdue_tasks": overdue_tasks,
         "total_users": total_users,
         "active_users": active_users,
-        "total_meetings": total_meetings,
-        "upcoming_meetings": upcoming_meetings,
+        "team_members": team_members,
+        "total_sessions": total_sessions,
+        "recent_sessions": recent_sessions,
+        "team_member_stats": team_member_stats,
         "recent_tasks": recent_tasks,
-        "recent_meetings": recent_meetings,
         "completion_rate": round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1),
         "team_stats": team_stats,
     }
