@@ -39,6 +39,7 @@ class TaskComment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     comment_type = models.CharField(max_length=20, choices=COMMENT_TYPES, default="GENERAL")
     message = models.TextField()
+    attachment = models.FileField(upload_to='task_attachments/%Y/%m/%d/', blank=True, null=True, help_text="Attach screenshots or files")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -46,3 +47,13 @@ class TaskComment(models.Model):
     
     def __str__(self):
         return f"{self.author.name} - {self.get_comment_type_display()}"
+    
+    @property
+    def has_attachment(self):
+        return bool(self.attachment)
+    
+    @property
+    def attachment_name(self):
+        if self.attachment:
+            return self.attachment.name.split('/')[-1]
+        return None

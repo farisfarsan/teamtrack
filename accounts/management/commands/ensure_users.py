@@ -56,13 +56,13 @@ class Command(BaseCommand):
                 'team': 'TECH'
             },
             {
-                'email': 'vyshak@example.com',
+                'email': 'vyshakpk10@gmail.com',
                 'name': 'Vyshak',
                 'password': 'vyshak123',
                 'team': 'TECH'
             },
             {
-                'email': 'dileep@example.com',
+                'email': 'dileepkrishnan92@gmail.com',
                 'name': 'Dileep',
                 'password': 'dileep123',
                 'team': 'TECH'

@@ -4,9 +4,11 @@ from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.conf import settings
 from .models import Task, TaskComment
 from accounts.models import User
 from notifications.models import Notification
+from .email_utils import send_task_assignment_email, send_task_update_email, send_comment_notification_email
 
 @login_required
 def task_list(request):
@@ -87,6 +89,9 @@ def task_create(request):
                     recipient=assigned_to,
                     message=f'New task assigned: "{task.title}" by {request.user.name} (Team: {task.get_team_display()})'
                 )
+                
+                # Send email notification
+                send_task_assignment_email(task, assigned_to, request.user)
                 
                 messages.success(request, f'Task "{task.title}" created and assigned to {assigned_to.name}!')
                 return redirect('tasks:task_list')
@@ -232,13 +237,15 @@ def task_add_comment(request, pk):
     if request.method == 'POST':
         comment_type = request.POST.get('comment_type', 'GENERAL')
         message = request.POST.get('message', '').strip()
+        attachment = request.FILES.get('attachment')
         
         if message:
             comment = TaskComment.objects.create(
                 task=task,
                 author=request.user,
                 comment_type=comment_type,
-                message=message
+                message=message,
+                attachment=attachment
             )
             
             # Create notification for the other party
@@ -254,6 +261,9 @@ def task_add_comment(request, pk):
                     recipient=task.assigned_to,
                     message=f'New comment on task "{task.title}" by {request.user.name}: {message[:50]}...'
                 )
+            
+            # Send email notification
+            send_comment_notification_email(comment, task)
             
             messages.success(request, 'Comment added successfully!')
         else:

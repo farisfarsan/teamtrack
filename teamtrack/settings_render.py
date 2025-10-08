@@ -14,6 +14,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-for-development-only-change-in-production")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
+# Site branding
+SITE_NAME = "GRYTT"
+BASE_URL = os.getenv("BASE_URL", "https://teamtrack-1.onrender.com")
+
 # Render deployment settings
 ALLOWED_HOSTS = [
     'localhost',
@@ -146,6 +150,17 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# ---------------------------------------------------------
+# EMAIL CONFIGURATION
+# ---------------------------------------------------------
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@grytt.com')
 
 # ---------------------------------------------------------
 # LOGGING
