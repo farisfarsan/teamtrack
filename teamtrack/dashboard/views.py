@@ -47,25 +47,6 @@ def admin_dashboard(request):
     active_users = User.objects.filter(is_active=True).count()
     team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
     
-    # Attendance analytics
-    total_sessions = Meeting.objects.count()
-    recent_sessions = Meeting.objects.order_by('-scheduled_at')[:5]
-    
-    # Team member attendance overview
-    team_member_stats = []
-    for member in team_members:
-        attendance_records = MeetingAttendance.objects.filter(user=member)
-        total_sessions_for_member = attendance_records.count()
-        present_sessions = attendance_records.filter(present=True).count()
-        attendance_rate = (present_sessions / total_sessions_for_member * 100) if total_sessions_for_member > 0 else 0
-        
-        team_member_stats.append({
-            'member': member,
-            'total_sessions': total_sessions_for_member,
-            'present_sessions': present_sessions,
-            'attendance_rate': round(attendance_rate, 1)
-        })
-    
     # Recent activity - ALL tasks
     recent_tasks = all_tasks.order_by('-created_at')[:10]
     
@@ -82,9 +63,6 @@ def admin_dashboard(request):
         "total_users": total_users,
         "active_users": active_users,
         "team_members": team_members,
-        "total_sessions": total_sessions,
-        "recent_sessions": recent_sessions,
-        "team_member_stats": team_member_stats,
         "recent_tasks": recent_tasks,
         "completion_rate": round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1),
         "team_stats": team_stats,
