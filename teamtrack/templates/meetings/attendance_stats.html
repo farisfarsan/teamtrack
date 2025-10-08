@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Statistics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Meeting Attendance Statistics
+                    </h3>
+                    <p class="text-muted mb-0">Overview of attendance across all meetings</p>
+                </div>
+                <div class="card-body">
+                    {% if meeting_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Meeting</th>
+                                    <th>Date</th>
+                                    <th>Organizer</th>
+                                    <th>Attendance</th>
+                                    <th>Present</th>
+                                    <th>Absent</th>
+                                    <th>Rate</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stats in meeting_stats %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ stats.meeting.title }}</strong>
+                                        {% if stats.meeting.description %}
+                                        <br><small class="text-muted">{{ stats.meeting.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ stats.meeting.scheduled_at|date:"M d, Y" }}
+                                        <br>
+                                        <small class="text-muted">{{ stats.meeting.scheduled_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ stats.meeting.organizer.name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">{{ stats.attendance_count }}/{{ stats.total_invited }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ stats.attendance_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ stats.absent_count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="width: 100px;">
+                                            <div class="progress-bar 
+                                                {% if stats.attendance_rate >= 80 %}bg-success
+                                                {% elif stats.attendance_rate >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ stats.attendance_rate }}%"
+                                                aria-valuenow="{{ stats.attendance_rate }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ stats.attendance_rate|floatformat:0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'meetings:detail' stats.meeting.pk %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{% url 'meetings:manage_attendance' stats.meeting.pk %}" 
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-edit"></i> Mark
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No meetings found</h4>
+                        <p class="text-muted">Create your first meeting to start tracking attendance.</p>
+                        <a href="{% url 'meetings:create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Meeting
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress {
+    height: 20px;
+}
+.progress-bar {
+    font-size: 12px;
+    line-height: 20px;
+}
+</style>
+{% endblock %}

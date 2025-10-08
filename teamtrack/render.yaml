@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: teamtrack
+    env: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: ./start.sh
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DJANGO_SETTINGS_MODULE
+        value: teamtrack.settings_render
+      - key: BASE_URL
+        value: https://teamtrack-1.onrender.com
+    healthCheckPath: /health/
+    # Optimize for faster startup
+    instanceCount: 1
+    # Add restart policy
+    restartPolicy: always
+
+databases:
+  - name: teamtrack-db
+    plan: free

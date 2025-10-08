@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Manage Attendance - {{ meeting.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-calendar-check"></i> Manage Attendance
+                    </h3>
+                    <p class="text-muted mb-0">{{ meeting.title }} - {{ meeting.scheduled_at|date:"F d, Y H:i" }}</p>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <strong>Current Attendance:</strong> {{ attendance_stats }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-warning">
+                                <strong>Total Invited:</strong> {{ meeting.attendees.count }} members
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Team Member</th>
+                                        <th>Team</th>
+                                        <th>Status</th>
+                                        <th>Mark Present</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for attendee in meeting.attendees.all %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    {{ attendee.name|first|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ attendee.name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ attendee.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ attendee.get_team_display }}</span>
+                                        </td>
+                                        <td>
+                                            {% if attendance_records|lookup:attendee.id %}
+                                                <span class="badge bg-success">Present</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Absent</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="attendance_{{ attendee.id }}" 
+                                                       id="attendance_{{ attendee.id }}"
+                                                       {% if attendance_records|lookup:attendee.id %}checked{% endif %}>
+                                                <label class="form-check-label" for="attendance_{{ attendee.id }}">
+                                                    Present
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">
+                                            No attendees found for this meeting.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Attendance
+                            </button>
+                            <a href="{% url 'meetings:detail' meeting.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Meeting
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
