@@ -18,6 +18,8 @@ class Command(BaseCommand):
             {'email': 'jasa542000@gmail.com', 'password': 'jaseel123', 'name': 'Jaseel'},
             {'email': 'grytt.sreehari@gmail.com', 'password': 'sreehari123', 'name': 'Sreehari'},
             {'email': 'muralisyam1@gmail.com', 'password': 'syam123', 'name': 'Syam Murali'},
+            {'email': 'vyshak@example.com', 'password': 'vyshak123', 'name': 'Vyshak'},
+            {'email': 'dileep@example.com', 'password': 'dileep123', 'name': 'Dileep'},
         ]
         
         success_count = 0

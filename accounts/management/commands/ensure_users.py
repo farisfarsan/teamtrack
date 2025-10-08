@@ -54,6 +54,18 @@ class Command(BaseCommand):
                 'name': 'Syam Murali',
                 'password': 'syam123',
                 'team': 'TECH'
+            },
+            {
+                'email': 'vyshak@example.com',
+                'name': 'Vyshak',
+                'password': 'vyshak123',
+                'team': 'TECH'
+            },
+            {
+                'email': 'dileep@example.com',
+                'name': 'Dileep',
+                'password': 'dileep123',
+                'team': 'TECH'
             }
         ]
 
