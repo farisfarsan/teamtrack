@@ -93,8 +93,8 @@
                 <div class="row text-center">
                     <div class="col-6">
                         <div class="border-end">
-                            <h5 class="mb-0 text-info">{{ user.organized_meetings.count }}</h5>
-                            <small class="text-muted">Organized Meetings</small>
+                            <h5 class="mb-0 text-info">{{ user.meetings.count }}</h5>
+                            <small class="text-muted">Attendance Sessions</small>
                         </div>
                     </div>
                     <div class="col-6">
@@ -116,9 +116,6 @@
                     </a>
                     <a href="{% url 'tasks:task_create' %}" class="btn btn-outline-success">
                         <i class="fas fa-plus"></i> Create Task
-                    </a>
-                    <a href="{% url 'meetings:create' %}" class="btn btn-outline-info">
-                        <i class="fas fa-calendar-plus"></i> Schedule Meeting
                     </a>
                 </div>
             </div>
