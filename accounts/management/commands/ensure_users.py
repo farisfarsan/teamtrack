@@ -5,6 +5,8 @@ class Command(BaseCommand):
     help = 'Ensure all required users exist with correct credentials'
 
     def handle(self, *args, **options):
+        self.stdout.write('Starting user creation/update process...')
+        
         # Users to create/update
         users_data = [
             {
@@ -57,6 +59,7 @@ class Command(BaseCommand):
 
         created_count = 0
         updated_count = 0
+        error_count = 0
 
         for user_data in users_data:
             email = user_data['email']
@@ -72,33 +75,55 @@ class Command(BaseCommand):
                 user.save()
                 updated_count += 1
                 self.stdout.write(
-                    self.style.SUCCESS(f'Updated user: {email}')
+                    self.style.SUCCESS(f'✅ Updated user: {email} ({user_data["name"]})')
                 )
             except User.DoesNotExist:
-                # Create new user
-                user = User.objects.create_user(
-                    email=email,
-                    name=user_data['name'],
-                    password=user_data['password'],
-                    team=user_data['team']
-                )
-                if user_data.get('is_staff', False):
-                    user.is_staff = True
-                if user_data.get('is_superuser', False):
-                    user.is_superuser = True
-                user.save()
-                created_count += 1
+                try:
+                    # Create new user
+                    user = User.objects.create_user(
+                        email=email,
+                        name=user_data['name'],
+                        password=user_data['password'],
+                        team=user_data['team']
+                    )
+                    if user_data.get('is_staff', False):
+                        user.is_staff = True
+                    if user_data.get('is_superuser', False):
+                        user.is_superuser = True
+                    user.save()
+                    created_count += 1
+                    self.stdout.write(
+                        self.style.SUCCESS(f'✅ Created user: {email} ({user_data["name"]})')
+                    )
+                except Exception as e:
+                    error_count += 1
+                    self.stdout.write(
+                        self.style.ERROR(f'❌ Error creating user {email}: {str(e)}')
+                    )
+            except Exception as e:
+                error_count += 1
                 self.stdout.write(
-                    self.style.SUCCESS(f'Created user: {email}')
+                    self.style.ERROR(f'❌ Error updating user {email}: {str(e)}')
                 )
 
+        self.stdout.write('\n' + '='*50)
         self.stdout.write(
             self.style.SUCCESS(
-                f'\nSummary: Created {created_count} users, Updated {updated_count} users'
+                f'📊 SUMMARY: Created {created_count} users, Updated {updated_count} users, Errors: {error_count}'
             )
         )
 
-        # List all users
-        self.stdout.write('\nAll users in database:')
-        for user in User.objects.all():
-            self.stdout.write(f'- {user.email} ({user.name}) - {user.get_team_display()}')
+        # List all users with their details
+        self.stdout.write('\n📋 ALL USERS IN DATABASE:')
+        self.stdout.write('-' * 80)
+        for user in User.objects.all().order_by('email'):
+            role = "Admin" if user.is_superuser else "Project Manager" if user.team == 'PROJECT_MANAGER' else user.get_team_display()
+            self.stdout.write(f'📧 {user.email:<30} | 👤 {user.name:<15} | 🏢 {role:<20} | ✅ Active: {user.is_active}')
+        
+        self.stdout.write('\n🔐 LOGIN CREDENTIALS:')
+        self.stdout.write('-' * 80)
+        for user_data in users_data:
+            self.stdout.write(f'📧 Email: {user_data["email"]:<30} | 🔑 Password: {user_data["password"]}')
+        
+        self.stdout.write('\n🌐 APPLICATION URL: https://teamtrack-1.onrender.com')
+        self.stdout.write('🎯 Ready for login!')
