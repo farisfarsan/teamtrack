@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Attendance Sessions - GRYTT{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Attendance Sessions</h2>
+                <p class="text-muted mb-0">Manage team member attendance</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'attendance:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Session
+                </a>
+                <a href="{% url 'attendance:stats' %}" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> View Stats
+                </a>
+            </div>
+        </div>
+
+        <!-- Team Overview -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ total_members }}</h3>
+                        <p class="mb-0">Team Members</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ sessions.count }}</h3>
+                        <p class="mb-0">Total Sessions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ team_members.count }}</h3>
+                        <p class="mb-0">Active Members</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions List -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Attendance Sessions</h5>
+            </div>
+            <div class="card-body">
+                {% if sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Session Title</th>
+                                    <th>Organizer</th>
+                                    <th>Scheduled At</th>
+                                    <th>Attendance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ session.title }}</strong>
+                                        {% if session.description %}
+                                        <br><small class="text-muted">{{ session.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                {{ session.organizer.name|first|upper }}
+                                            </div>
+                                            <span>{{ session.organizer.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ session.scheduled_at|date:"M d, Y" }}</strong>
+                                        <br><small class="text-muted">{{ session.scheduled_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">{{ session.get_attendance_stats }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'attendance:detail' session.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{% url 'attendance:detail' session.pk %}" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-check"></i> Mark
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No attendance sessions yet</h5>
+                        <p class="text-muted">Create your first attendance session to start tracking team member attendance.</p>
+                        <a href="{% url 'attendance:create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create First Session
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

@@ -29,6 +29,7 @@ urlpatterns = [
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("tasks/", include(("tasks.urls", "tasks"), namespace="tasks")),
     path("notifications/", include(("notifications.urls", "notifications"), namespace="notifications")),
+    path("attendance/", include(("attendance.urls", "attendance"), namespace="attendance")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
 ]
 

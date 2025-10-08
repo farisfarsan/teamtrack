@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Attendance Statistics - GRYTT{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Attendance Statistics</h2>
+                <p class="text-muted mb-0">Overall team member attendance overview</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'attendance:list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Sessions
+                </a>
+                <a href="{% url 'attendance:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Session
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ member_stats|length }}</h3>
+                        <p class="mb-0">Team Members</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ total_sessions }}</h3>
+                        <p class="mb-0">Total Sessions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">
+                            {% if member_stats %}
+                                {% widthratio member_stats|length 1 1 %}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </h3>
+                        <p class="mb-0">Active Members</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Member Statistics -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i> Individual Attendance Rates
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if member_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Team Member</th>
+                                    <th>Team</th>
+                                    <th>Sessions Attended</th>
+                                    <th>Total Sessions</th>
+                                    <th>Attendance Rate</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in member_stats %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                {{ stat.member.name|first|upper }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ stat.member.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ stat.member.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ stat.member.get_team_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ stat.present_sessions }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ stat.total_sessions }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="width: 120px;">
+                                            <div class="progress-bar 
+                                                {% if stat.attendance_rate >= 80 %}bg-success
+                                                {% elif stat.attendance_rate >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ stat.attendance_rate }}%"
+                                                aria-valuenow="{{ stat.attendance_rate }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                {{ stat.attendance_rate }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if stat.attendance_rate >= 80 %}
+                                            <span class="badge bg-success">Excellent</span>
+                                        {% elif stat.attendance_rate >= 60 %}
+                                            <span class="badge bg-warning">Good</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Needs Improvement</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No attendance data yet</h5>
+                        <p class="text-muted">Create attendance sessions to start tracking team member attendance.</p>
+                        <a href="{% url 'attendance:create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create First Session
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: bold;
+}
+.progress {
+    height: 20px;
+}
+.progress-bar {
+    font-size: 12px;
+    line-height: 20px;
+}
+</style>
+{% endblock %}
