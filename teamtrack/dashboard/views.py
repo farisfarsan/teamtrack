@@ -141,13 +141,15 @@ def member_dashboard(request):
         status="PENDING"
     ).order_by('-created_at')
     
-    # Upcoming meetings (only for Project Managers)
-    upcoming_meetings = []
-    if request.user.team == 'PROJECT_MANAGER':
-        upcoming_meetings = Meeting.objects.filter(
-            attendees=request.user,
-            scheduled_at__gte=timezone.now()
-        ).order_by('scheduled_at')[:5]
+    # User's attendance information
+    user_attendance_records = MeetingAttendance.objects.filter(user=request.user)
+    total_sessions = user_attendance_records.count()
+    present_sessions = user_attendance_records.filter(present=True).count()
+    absent_sessions = user_attendance_records.filter(present=False).count()
+    attendance_rate = (present_sessions / total_sessions * 100) if total_sessions > 0 else 0
+    
+    # Recent attendance sessions for this user
+    recent_attendance = user_attendance_records.order_by('-marked_at')[:5]
     
     # Recent notifications
     recent_notifications = Notification.objects.filter(
@@ -164,12 +166,17 @@ def member_dashboard(request):
         "pending_tasks": pending_tasks,
         "in_progress_tasks": in_progress_tasks,
         "overdue_tasks": overdue_tasks,
-        "upcoming_meetings": upcoming_meetings,
         "recent_notifications": recent_notifications,
         "recent_tasks": recent_tasks,
         "completion_rate": round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1),
         "team_tasks": team_tasks,
         "all_team_tasks": all_team_tasks,
         "team_name": request.user.get_team_display(),
+        # Attendance data
+        "total_sessions": total_sessions,
+        "present_sessions": present_sessions,
+        "absent_sessions": absent_sessions,
+        "attendance_rate": round(attendance_rate, 1),
+        "recent_attendance": recent_attendance,
     }
     return render(request,"dashboard/member.html", data)
