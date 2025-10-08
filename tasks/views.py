@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.conf import settings
+from django.db import transaction
 from .models import Task, TaskComment
 from accounts.models import User
 from notifications.models import Notification
@@ -63,38 +64,52 @@ def task_create(request):
         return redirect('tasks:task_list')
     
     if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description', '')
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
         assigned_to_id = request.POST.get('assigned_to')
         team = request.POST.get('team', 'TECH')
         priority = request.POST.get('priority', 'MEDIUM')
         due_date = request.POST.get('due_date')
         
-        if title and assigned_to_id:
-            try:
-                assigned_to = User.objects.get(id=assigned_to_id)
-                task = Task.objects.create(
-                    title=title,
-                    description=description,
-                    assigned_to=assigned_to,
-                    assigned_by=request.user,
-                    team=team,
-                    priority=priority,
-                    due_date=due_date if due_date else None
-                )
-                
-                # Create notification for the assigned user
-                Notification.objects.create(
-                    recipient=assigned_to,
-                    message=f'New task assigned: "{task.title}" by {request.user.name} (Team: {task.get_team_display()})'
-                )
-                
-                messages.success(request, f'Task "{task.title}" created and assigned to {assigned_to.name}!')
-                return redirect('tasks:task_list')
-            except User.DoesNotExist:
-                messages.error(request, 'Invalid user selected.')
+        # Validate required fields
+        if not title:
+            messages.error(request, 'Task title is required.')
+        elif not assigned_to_id:
+            messages.error(request, 'Please select a user to assign the task to.')
         else:
-            messages.error(request, 'Please fill in all required fields.')
+            try:
+                # Use database transaction to ensure data consistency
+                with transaction.atomic():
+                    assigned_to = User.objects.get(id=assigned_to_id, is_active=True)
+                    
+                    # Create the task
+                    task = Task.objects.create(
+                        title=title,
+                        description=description,
+                        assigned_to=assigned_to,
+                        assigned_by=request.user,
+                        team=team,
+                        priority=priority,
+                        due_date=due_date if due_date else None
+                    )
+                    
+                    # Create notification for the assigned user
+                    Notification.objects.create(
+                        recipient=assigned_to,
+                        message=f'New task assigned: "{task.title}" by {request.user.name} (Team: {task.get_team_display()})'
+                    )
+                    
+                    # Verify task was created successfully
+                    if Task.objects.filter(id=task.id).exists():
+                        messages.success(request, f'Task "{task.title}" created and assigned to {assigned_to.name}!')
+                        return redirect('tasks:task_detail', pk=task.pk)
+                    else:
+                        messages.error(request, 'Task creation failed. Please try again.')
+                        
+            except User.DoesNotExist:
+                messages.error(request, 'Selected user not found or inactive.')
+            except Exception as e:
+                messages.error(request, f'Error creating task: {str(e)}')
     
     # Get all users for assignment dropdown
     users = User.objects.filter(is_active=True)
