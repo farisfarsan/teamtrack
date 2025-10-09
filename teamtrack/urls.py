@@ -13,10 +13,15 @@ def favicon_view(request):
     """Handle favicon requests (no actual favicon file)"""
     return HttpResponse(status=204)
 
+def keep_alive_view(request):
+    """Keep-alive endpoint for external monitoring services"""
+    return HttpResponse("OK", status=200)
+
 urlpatterns = [
     # Core
     path("", root_redirect, name="root"),
     path("favicon.ico", favicon_view, name="favicon"),
+    path("keep-alive/", keep_alive_view, name="keep_alive"),
     path("admin/", admin.site.urls),
 
     # Apps (each must have app_name defined in its urls.py)
