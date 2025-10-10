@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "notifications",
     "dashboard",
     "meetings",
-    "attendance",
 ]
 
 # ---------------------------------------------------------
