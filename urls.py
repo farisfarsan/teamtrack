@@ -6,8 +6,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 def root_redirect(request):
-    """Redirect root URL to attendance"""
-    return redirect("attendance:list")
+    """Redirect root URL to dashboard"""
+    return redirect("dashboard:home")
 
 def favicon_view(request):
     """Handle favicon requests (no actual favicon file)"""
@@ -24,8 +24,12 @@ urlpatterns = [
     path("keep-alive/", keep_alive_view, name="keep_alive"),
     path("admin/", admin.site.urls),
 
-    # Apps
-    path("attendance/", include(("attendance.urls", "attendance"), namespace="attendance")),
+    # Apps (each must have app_name defined in its urls.py)
+    path("accounts/", include(("teamtrack.accounts.urls", "accounts"), namespace="accounts")),
+    path("tasks/", include(("teamtrack.tasks.urls", "tasks"), namespace="tasks")),
+    path("notifications/", include(("teamtrack.notifications.urls", "notifications"), namespace="notifications")),
+    path("dashboard/", include(("teamtrack.dashboard.urls", "dashboard"), namespace="dashboard")),
+    path("attendance/", include(("teamtrack.attendance.urls", "attendance"), namespace="attendance")),
 ]
 
 # Serve media files in development and production

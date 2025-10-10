@@ -32,7 +32,12 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
-    "attendance",
+    "teamtrack.accounts",
+    "teamtrack.core",
+    "teamtrack.tasks",
+    "teamtrack.notifications",
+    "teamtrack.dashboard",
+    "teamtrack.attendance",
 ]
 
 # ---------------------------------------------------------
@@ -120,9 +125,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ---------------------------------------------------------
 # CUSTOM USER MODEL
 # ---------------------------------------------------------
-# AUTH_USER_MODEL = "teamtrack.accounts.User"  # Using default User model
-LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/attendance/'
+AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # ---------------------------------------------------------
 # DEFAULT PRIMARY KEY FIELD TYPE

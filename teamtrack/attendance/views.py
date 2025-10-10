@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from .models import AttendanceRecord
-from accounts.models import User
+from teamtrack.accounts.models import User
 
 @login_required
 def attendance_list(request):
