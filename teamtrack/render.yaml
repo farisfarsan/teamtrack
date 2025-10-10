@@ -3,8 +3,8 @@ services:
     name: teamtrack
     env: python
     plan: free
-    buildCommand: ./build.sh
-    startCommand: ./start.sh
+    buildCommand: cd teamtrack && ./build.sh
+    startCommand: cd teamtrack && ./start.sh
     envVars:
       - key: SECRET_KEY
         generateValue: true
