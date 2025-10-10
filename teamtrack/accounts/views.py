@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import User
+from core.utils import PermissionMixin
 
 def login_view(request):
     if request.method == "POST":
@@ -30,7 +31,7 @@ def profile_update(request):
         user.email = request.POST.get('email', user.email)
         
         # Only allow team change for Project Managers
-        if request.user.team == 'PROJECT_MANAGER':
+        if PermissionMixin.is_project_manager(request.user):
             user.team = request.POST.get('team', user.team)
         
         user.save()

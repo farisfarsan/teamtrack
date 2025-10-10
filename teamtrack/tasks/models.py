@@ -1,17 +1,11 @@
 from django.db import models
 from accounts.models import User
+from core.constants import TEAMS, TASK_STATUS, TASK_PRIORITY, TASK_COMMENT_TYPES, TASK_ATTACHMENT_PATH
 
 class Task(models.Model):
-    STATUS = [("PENDING","Pending"),("IN_PROGRESS","In Progress"),
-              ("REVIEW","Review"),("COMPLETED","Completed"),("BLOCKED","Blocked")]
-    PRIORITY = [("LOW","Low"),("MEDIUM","Medium"),("HIGH","High")]
-    TEAMS = (
-        ("PROJECT_MANAGER", "Project Manager"),
-        ("DESIGN", "Design"),
-        ("TECH", "Tech"),
-        ("PRODUCT_MANAGEMENT", "Product Management"),
-        ("MARKETING", "Marketing")
-    )
+    STATUS = TASK_STATUS
+    PRIORITY = TASK_PRIORITY
+    TEAMS = TEAMS
 
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -27,19 +21,13 @@ class Task(models.Model):
     def __str__(self): return self.title
 
 class TaskComment(models.Model):
-    COMMENT_TYPES = [
-        ("PROGRESS", "Progress Update"),
-        ("QUESTION", "Question"),
-        ("BLOCKER", "Blocker"),
-        ("COMPLETION", "Completion Note"),
-        ("GENERAL", "General Comment")
-    ]
+    COMMENT_TYPES = TASK_COMMENT_TYPES
     
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     comment_type = models.CharField(max_length=20, choices=COMMENT_TYPES, default="GENERAL")
     message = models.TextField()
-    attachment = models.FileField(upload_to='task_attachments/%Y/%m/%d/', blank=True, null=True, help_text="Attach screenshots or files")
+    attachment = models.FileField(upload_to=TASK_ATTACHMENT_PATH, blank=True, null=True, help_text="Attach screenshots or files")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

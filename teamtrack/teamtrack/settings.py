@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
+    "core",
     "accounts",
     "tasks",
     "notifications",

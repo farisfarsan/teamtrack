@@ -9,16 +9,21 @@ from django.db import transaction
 from .models import Task, TaskComment
 from accounts.models import User
 from notifications.models import Notification
+from core.utils import (
+    PermissionMixin, TaskFilterMixin, PaginationMixin, NotificationMixin,
+    get_context_with_filters, handle_task_creation
+)
+from core.constants import ITEMS_PER_PAGE
 
 @login_required
 def task_list(request):
-    # Get search query
+    # Get filter parameters
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
     priority_filter = request.GET.get('priority', '')
     
-    # Base queryset - show tasks assigned to current user, or all tasks if Project Manager
-    if request.user.team == 'PROJECT_MANAGER':
+    # Get filtered tasks using shared utility
+    if PermissionMixin.is_project_manager(request.user):
         tasks = Task.objects.all()
     else:
         tasks = Task.objects.filter(assigned_to=request.user)
@@ -39,77 +44,30 @@ def task_list(request):
     # Order by creation date (newest first)
     tasks = tasks.order_by('-created_at')
     
-    # Pagination
-    paginator = Paginator(tasks, 10)  # Show 10 tasks per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # Pagination using shared utility
+    page_obj = PaginationMixin.paginate_queryset(tasks, request, ITEMS_PER_PAGE)
     
-    context = {
-        'page_obj': page_obj,
-        'tasks': page_obj,
-        'search_query': search_query,
-        'status_filter': status_filter,
-        'priority_filter': priority_filter,
-        'status_choices': Task.STATUS,
-        'priority_choices': Task.PRIORITY,
-    }
+    # Get context with filters using shared utility
+    context = get_context_with_filters(request, 
+        page_obj=page_obj,
+        tasks=page_obj,
+        status_choices=Task.STATUS,
+        priority_choices=Task.PRIORITY,
+    )
     
     return render(request, "tasks/task_list.html", context)
 
 @login_required
 def task_create(request):
     # Only Project Managers can create tasks
-    if request.user.team != 'PROJECT_MANAGER':
+    if not PermissionMixin.is_project_manager(request.user):
         messages.error(request, 'Only Project Managers can create tasks.')
         return redirect('tasks:task_list')
     
     if request.method == 'POST':
-        title = request.POST.get('title', '').strip()
-        description = request.POST.get('description', '').strip()
-        assigned_to_id = request.POST.get('assigned_to')
-        team = request.POST.get('team', 'TECH')
-        priority = request.POST.get('priority', 'MEDIUM')
-        due_date = request.POST.get('due_date')
-        
-        # Validate required fields
-        if not title:
-            messages.error(request, 'Task title is required.')
-        elif not assigned_to_id:
-            messages.error(request, 'Please select a user to assign the task to.')
-        else:
-            try:
-                # Use database transaction to ensure data consistency
-                with transaction.atomic():
-                    assigned_to = User.objects.get(id=assigned_to_id, is_active=True)
-                    
-                    # Create the task
-                    task = Task.objects.create(
-                        title=title,
-                        description=description,
-                        assigned_to=assigned_to,
-                        assigned_by=request.user,
-                        team=team,
-                        priority=priority,
-                        due_date=due_date if due_date else None
-                    )
-                    
-                    # Create notification for the assigned user
-                    Notification.objects.create(
-                        recipient=assigned_to,
-                        message=f'New task assigned: "{task.title}" by {request.user.name} (Team: {task.get_team_display()})'
-                    )
-                    
-                    # Verify task was created successfully
-                    if Task.objects.filter(id=task.id).exists():
-                        messages.success(request, f'Task "{task.title}" created and assigned to {assigned_to.name}!')
-                        return redirect('tasks:task_detail', pk=task.pk)
-                    else:
-                        messages.error(request, 'Task creation failed. Please try again.')
-                        
-            except User.DoesNotExist:
-                messages.error(request, 'Selected user not found or inactive.')
-            except Exception as e:
-                messages.error(request, f'Error creating task: {str(e)}')
+        task = handle_task_creation(request, request.POST)
+        if task:
+            return redirect('tasks:task_detail', pk=task.pk)
     
     # Get all users for assignment dropdown
     users = User.objects.filter(is_active=True)
@@ -123,10 +81,9 @@ def task_create(request):
 @login_required
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
-    # Allow viewing tasks assigned to current user, assigned by current user, or if user is Project Manager
-    if (task.assigned_to != request.user and 
-        task.assigned_by != request.user and 
-        request.user.team != 'PROJECT_MANAGER'):
+    
+    # Check permissions using shared utility
+    if not PermissionMixin.can_view_task(request.user, task):
         messages.error(request, 'You do not have permission to view this task.')
         return redirect('tasks:task_list')
     
@@ -144,9 +101,8 @@ def task_detail(request, pk):
 def task_update(request, pk):
     task = get_object_or_404(Task, pk=pk)
     
-    # Only Project Managers can update tasks, or users can update their own assigned tasks
-    if (request.user.team != 'PROJECT_MANAGER' and 
-        task.assigned_to != request.user):
+    # Check permissions using shared utility
+    if not PermissionMixin.can_edit_task(request.user, task):
         messages.error(request, 'You can only edit tasks assigned to you or you must be a Project Manager.')
         return redirect('tasks:task_list')
     
@@ -159,7 +115,7 @@ def task_update(request, pk):
         task.due_date = request.POST.get('due_date') if request.POST.get('due_date') else None
         
         # Only allow changing assignee if user is Project Manager
-        if request.user.team == 'PROJECT_MANAGER':
+        if PermissionMixin.is_project_manager(request.user):
             assigned_to_id = request.POST.get('assigned_to')
             if assigned_to_id:
                 try:
@@ -169,12 +125,9 @@ def task_update(request, pk):
         
         task.save()
         
-        # Create notification for status changes
+        # Create notification for status changes using shared utility
         if task.status == 'COMPLETED':
-            Notification.objects.create(
-                recipient=task.assigned_by,
-                message=f'Task "{task.title}" has been completed by {task.assigned_to.name}'
-            )
+            NotificationMixin.notify_task_completion(task)
         
         messages.success(request, f'Task "{task.title}" updated successfully!')
         return redirect('tasks:task_detail', pk=task.pk)
@@ -192,8 +145,8 @@ def task_update(request, pk):
 def task_delete(request, pk):
     task = get_object_or_404(Task, pk=pk)
     
-    # Only Project Managers can delete tasks
-    if request.user.team != 'PROJECT_MANAGER':
+    # Check permissions using shared utility
+    if not PermissionMixin.can_delete_task(request.user, task):
         messages.error(request, 'Only Project Managers can delete tasks.')
         return redirect('tasks:task_list')
     
@@ -222,12 +175,8 @@ def task_status_update(request, pk):
             task.status = new_status
             task.save()
             
-            # Create notification for the manager
-            if task.assigned_by:
-                Notification.objects.create(
-                    recipient=task.assigned_by,
-                    message=f'Task "{task.title}" status changed from {old_status} to {new_status} by {request.user.name}'
-                )
+            # Create notification using shared utility
+            NotificationMixin.notify_status_change(task, old_status, new_status, request.user)
             
             messages.success(request, f'Task status updated to {task.get_status_display()}')
         else:
@@ -259,19 +208,8 @@ def task_add_comment(request, pk):
                 attachment=attachment
             )
             
-            # Create notification for the other party
-            if task.assigned_to == request.user and task.assigned_by:
-                # Assigned user commented, notify manager
-                Notification.objects.create(
-                    recipient=task.assigned_by,
-                    message=f'New comment on task "{task.title}" by {request.user.name}: {message[:50]}...'
-                )
-            elif task.assigned_by == request.user and task.assigned_to:
-                # Manager commented, notify assigned user
-                Notification.objects.create(
-                    recipient=task.assigned_to,
-                    message=f'New comment on task "{task.title}" by {request.user.name}: {message[:50]}...'
-                )
+            # Create notification using shared utility
+            NotificationMixin.notify_comment(task, comment, request.user)
             
             messages.success(request, 'Comment added successfully!')
         else:
