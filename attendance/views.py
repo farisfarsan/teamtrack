@@ -1,21 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from .models import AttendanceRecord
-from accounts.models import User
+
+User = get_user_model()
 
 @login_required
 def attendance_list(request):
     """List all attendance records"""
-    if request.user.team != 'PROJECT_MANAGER':
-        messages.error(request, 'Only Project Managers can access attendance management.')
-        return redirect('dashboard:home')
-    
+    # Simplified: allow all authenticated users to view attendance
     # Get attendance records grouped by date
-    records = AttendanceRecord.objects.all().order_by('-date', 'member__name')
+    records = AttendanceRecord.objects.all().order_by('-date', 'member__username')
     
     # Group records by date
     attendance_by_date = {}
@@ -25,8 +24,8 @@ def attendance_list(request):
             attendance_by_date[date_key] = []
         attendance_by_date[date_key].append(record)
     
-    # Get team members for creating new records
-    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+    # Get all users for creating new records
+    team_members = User.objects.filter(is_active=True)
     
     context = {
         'attendance_by_date': attendance_by_date,
@@ -40,8 +39,7 @@ def attendance_list(request):
 @login_required
 def mark_attendance(request):
     """Modal-based attendance marking"""
-    if request.user.team != 'PROJECT_MANAGER':
-        return JsonResponse({'error': 'Only Project Managers can mark attendance.'}, status=403)
+    # Simplified: allow all authenticated users to mark attendance
     
     if request.method == 'POST':
         date = request.POST.get('date')
@@ -50,8 +48,8 @@ def mark_attendance(request):
         if not date:
             return JsonResponse({'error': 'Date is required.'}, status=400)
         
-        # Get all team members
-        team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+        # Get all users
+        team_members = User.objects.filter(is_active=True)
         
         # Create/update attendance records
         for member in team_members:
@@ -70,7 +68,7 @@ def mark_attendance(request):
         })
     
     # GET request - show the marking interface
-    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER').order_by('name')
+    team_members = User.objects.filter(is_active=True).order_by('username')
     today = timezone.now().date()
     
     # Get existing attendance for today
