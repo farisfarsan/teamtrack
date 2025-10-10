@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 def root_redirect(request):
     """Redirect root URL to attendance"""
-    return redirect("attendance:session_list")
+    return redirect("attendance:list")
 
 def favicon_view(request):
     """Handle favicon requests (no actual favicon file)"""
