@@ -30,6 +30,7 @@ urlpatterns = [
     path("tasks/", include(("tasks.urls", "tasks"), namespace="tasks")),
     path("notifications/", include(("notifications.urls", "notifications"), namespace="notifications")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
+    path("attendance/", include(("attendance.urls", "attendance"), namespace="attendance")),
 ]
 
 # Serve media files in development and production

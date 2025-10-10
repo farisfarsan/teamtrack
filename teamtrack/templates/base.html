@@ -48,6 +48,9 @@
         <div class="ms-auto">
             <a class="nav-link d-inline-block {% if '/dashboard' in request.path %}active{% endif %}" href="{% url 'dashboard:home' %}">Dashboard</a>
             <a class="nav-link d-inline-block {% if '/tasks' in request.path %}active{% endif %}" href="{% url 'tasks:task_list' %}">Tasks</a>
+            {% if user.team == 'PROJECT_MANAGER' %}
+            <a class="nav-link d-inline-block {% if '/attendance' in request.path %}active{% endif %}" href="{% url 'attendance:list' %}">Attendance</a>
+            {% endif %}
             <a class="nav-link d-inline-block {% if '/notifications' in request.path %}active{% endif %}" href="{% url 'notifications:list' %}">Notifications</a>
             <a class="nav-link d-inline-block" href="{% url 'accounts:profile' %}">
                 <i class="fas fa-user"></i> {{ user.name }}
