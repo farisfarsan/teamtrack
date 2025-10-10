@@ -8,6 +8,9 @@ pip install --upgrade pip
 # Install dependencies with better error handling
 pip install -r requirements.txt --no-cache-dir
 
+# Change to teamtrack directory
+cd teamtrack
+
 # Collect static files
 python manage.py collectstatic --noinput --settings=teamtrack.settings_render
 
