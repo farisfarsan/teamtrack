@@ -14,8 +14,5 @@ python manage.py collectstatic --noinput --settings=teamtrack.settings_render
 # Run migrations
 python manage.py migrate --settings=teamtrack.settings_render
 
-# Ensure all users exist with correct credentials
-python manage.py ensure_users --settings=teamtrack.settings_render
-
-# Test login functionality
-python manage.py test_logins --settings=teamtrack.settings_render
+# Create real users for production
+python manage.py create_real_users --settings=teamtrack.settings_render
