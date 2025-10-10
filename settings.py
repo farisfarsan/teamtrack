@@ -32,11 +32,6 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
-    "teamtrack.accounts",
-    "teamtrack.tasks",
-    "teamtrack.notifications",
-    "teamtrack.dashboard",
-    "teamtrack.meetings",
     "attendance",
 ]
 
@@ -57,7 +52,7 @@ MIDDLEWARE = [
 # ---------------------------------------------------------
 # URLS / WSGI
 # ---------------------------------------------------------
-ROOT_URLCONF = "teamtrack.urls"
+ROOT_URLCONF = "urls"
 
 TEMPLATES = [
     {
@@ -75,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "teamtrack.wsgi.application"
+WSGI_APPLICATION = "wsgi.application"
 
 # ---------------------------------------------------------
 # DATABASE
@@ -125,7 +120,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ---------------------------------------------------------
 # CUSTOM USER MODEL
 # ---------------------------------------------------------
-AUTH_USER_MODEL = "teamtrack.accounts.User"
+# AUTH_USER_MODEL = "teamtrack.accounts.User"  # Using default User model
 
 # ---------------------------------------------------------
 # DEFAULT PRIMARY KEY FIELD TYPE

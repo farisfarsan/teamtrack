@@ -47,11 +47,6 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
-    "teamtrack.accounts",
-    "teamtrack.tasks",
-    "teamtrack.notifications",
-    "teamtrack.dashboard",
-    "teamtrack.meetings",
     "attendance",
 ]
 
@@ -69,7 +64,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "teamtrack.urls"
+ROOT_URLCONF = "urls"
 
 # ---------------------------------------------------------
 # TEMPLATES
@@ -90,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "teamtrack.wsgi.application"
+WSGI_APPLICATION = "wsgi.application"
 
 # ---------------------------------------------------------
 # DATABASE
@@ -107,7 +102,7 @@ DATABASES = {
 # ---------------------------------------------------------
 # AUTHENTICATION
 # ---------------------------------------------------------
-AUTH_USER_MODEL = "teamtrack.accounts.User"
+# AUTH_USER_MODEL = "teamtrack.accounts.User"  # Using default User model
 
 # ---------------------------------------------------------
 # INTERNATIONALIZATION

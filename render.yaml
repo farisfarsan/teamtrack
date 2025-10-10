@@ -3,16 +3,16 @@ services:
     name: teamtrack
     env: python
     plan: free
-    buildCommand: cd teamtrack && ./build.sh
-    startCommand: cd teamtrack && ./start.sh
+    buildCommand: ./build.sh
+    startCommand: ./start.sh
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: False
       - key: DJANGO_SETTINGS_MODULE
-        value: teamtrack.settings_render
-    healthCheckPath: /accounts/login/
+        value: settings_render
+    healthCheckPath: /attendance/
 
 databases:
   - name: teamtrack-db
