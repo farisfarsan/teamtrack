@@ -30,7 +30,6 @@ urlpatterns = [
     path("tasks/", include(("tasks.urls", "tasks"), namespace="tasks")),
     path("notifications/", include(("notifications.urls", "notifications"), namespace="notifications")),
     path("attendance/", include(("attendance.urls", "attendance"), namespace="attendance")),
-    path("attendence1/", include(("attendence1.urls", "attendence1"), namespace="attendence1")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
 ]
 

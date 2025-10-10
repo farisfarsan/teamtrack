@@ -3,114 +3,164 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
-from .models import AttendanceSession, AttendanceRecord
+from django.db.models import Q
+from .models import AttendanceRecord
 from accounts.models import User
 
 @login_required
 def attendance_list(request):
-    """List all attendance sessions"""
+    """List all attendance records"""
     if request.user.team != 'PROJECT_MANAGER':
         messages.error(request, 'Only Project Managers can access attendance management.')
         return redirect('dashboard:home')
     
-    sessions = AttendanceSession.objects.all().order_by('-scheduled_at')
+    # Get attendance records grouped by date
+    records = AttendanceRecord.objects.all().order_by('-date', 'member__name')
+    
+    # Group records by date
+    attendance_by_date = {}
+    for record in records:
+        date_key = record.date.strftime('%Y-%m-%d')
+        if date_key not in attendance_by_date:
+            attendance_by_date[date_key] = []
+        attendance_by_date[date_key].append(record)
+    
+    # Get team members for creating new records
     team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
     
     context = {
-        'sessions': sessions,
+        'attendance_by_date': attendance_by_date,
         'team_members': team_members,
-        'total_members': team_members.count()
+        'total_members': team_members.count(),
+        'total_records': records.count(),
+        'active_members': team_members.filter(attendance_records__status='Present').distinct().count()
     }
     return render(request, 'attendance/session_list.html', context)
 
 @login_required
-def create_session(request):
-    """Create a new attendance session"""
+def mark_attendance(request):
+    """Simple attendance marking - click to mark present, unclicked = absent"""
     if request.user.team != 'PROJECT_MANAGER':
-        messages.error(request, 'Only Project Managers can create attendance sessions.')
+        return JsonResponse({'error': 'Only Project Managers can mark attendance.'}, status=403)
+    
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        present_user_ids = request.POST.getlist('present_users[]')
+        
+        if not date:
+            return JsonResponse({'error': 'Date is required.'}, status=400)
+        
+        # Get all team members
+        team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+        
+        # Create/update attendance records
+        for member in team_members:
+            status = 'Present' if str(member.id) in present_user_ids else 'Absent'
+            AttendanceRecord.objects.update_or_create(
+                member=member,
+                date=date,
+                defaults={'status': status}
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Attendance marked for {date}',
+            'present_count': len(present_user_ids),
+            'total_count': team_members.count()
+        })
+    
+    # GET request - show the marking interface
+    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER').order_by('name')
+    today = timezone.now().date()
+    
+    # Get existing attendance for today
+    existing_records = AttendanceRecord.objects.filter(date=today)
+    present_user_ids = [str(record.member.id) for record in existing_records.filter(status='Present')]
+    
+    context = {
+        'team_members': team_members,
+        'today': today,
+        'present_user_ids': present_user_ids
+    }
+    return render(request, 'attendance/mark_attendance.html', context)
+
+@login_required
+def create_record(request):
+    """Create a new attendance record"""
+    if request.user.team != 'PROJECT_MANAGER':
+        messages.error(request, 'Only Project Managers can create attendance records.')
         return redirect('attendance:list')
     
     if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description', '')
-        scheduled_at = request.POST.get('scheduled_at')
+        member_id = request.POST.get('member')
+        date = request.POST.get('date')
+        status = request.POST.get('status')
         
-        if title and scheduled_at:
-            session = AttendanceSession.objects.create(
-                title=title,
-                description=description,
-                organizer=request.user,
-                scheduled_at=scheduled_at
-            )
-            
-            messages.success(request, f'Attendance session "{session.title}" created successfully.')
-            return redirect('attendance:detail', pk=session.pk)
+        if member_id and date and status:
+            try:
+                member = User.objects.get(id=member_id)
+                AttendanceRecord.objects.create(
+                    member=member,
+                    date=date,
+                    status=status
+                )
+                messages.success(request, f'Attendance record created for {member.name}.')
+                return redirect('attendance:list')
+            except User.DoesNotExist:
+                messages.error(request, 'Invalid team member selected.')
         else:
             messages.error(request, 'Please fill in all required fields.')
     
-    return render(request, 'attendance/create_session.html')
+    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+    context = {
+        'team_members': team_members,
+        'today': timezone.now().date()
+    }
+    return render(request, 'attendance/create_session.html', context)
 
 @login_required
-def session_detail(request, pk):
-    """View attendance session details"""
+def edit_record(request, pk):
+    """Edit an attendance record"""
     if request.user.team != 'PROJECT_MANAGER':
-        messages.error(request, 'Only Project Managers can access attendance details.')
-        return redirect('dashboard:home')
+        messages.error(request, 'Only Project Managers can edit attendance records.')
+        return redirect('attendance:list')
     
-    session = get_object_or_404(AttendanceSession, pk=pk)
+    record = get_object_or_404(AttendanceRecord, pk=pk)
     
-    # Get attendance records for this session
-    attendance_records = AttendanceRecord.objects.filter(session=session)
-    attendance_data = {}
-    for record in attendance_records:
-        attendance_data[record.user.id] = {
-            'present': record.present,
-            'marked_at': record.marked_at,
-            'marked_by': record.marked_by
-        }
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status:
+            record.status = status
+            record.save()
+            messages.success(request, f'Attendance record updated for {record.member.name}.')
+            return redirect('attendance:list')
+        else:
+            messages.error(request, 'Please select a valid status.')
     
     context = {
-        'session': session,
-        'attendance_records': attendance_data,
-        'attendance_stats': session.get_attendance_stats()
+        'record': record
     }
     return render(request, 'attendance/session_detail.html', context)
 
 @login_required
-def mark_attendance(request, pk):
-    """Mark attendance for team members"""
+def delete_record(request, pk):
+    """Delete an attendance record"""
     if request.user.team != 'PROJECT_MANAGER':
-        return JsonResponse({'error': 'Only Project Managers can mark attendance.'}, status=403)
+        messages.error(request, 'Only Project Managers can delete attendance records.')
+        return redirect('attendance:list')
     
-    session = get_object_or_404(AttendanceSession, pk=pk)
+    record = get_object_or_404(AttendanceRecord, pk=pk)
     
     if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        present = request.POST.get('present') == 'true'
-        
-        try:
-            user = User.objects.get(id=user_id)
-            attendance_record, created = AttendanceRecord.objects.get_or_create(
-                session=session,
-                user=user,
-                defaults={'present': present, 'marked_by': request.user}
-            )
-            
-            if not created:
-                attendance_record.present = present
-                attendance_record.marked_by = request.user
-                attendance_record.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'{user.name} marked as {"Present" if present else "Absent"}',
-                'attendance_stats': session.get_attendance_stats()
-            })
-            
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found.'}, status=404)
+        member_name = record.member.name
+        record.delete()
+        messages.success(request, f'Attendance record deleted for {member_name}.')
+        return redirect('attendance:list')
     
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+    context = {
+        'record': record
+    }
+    return render(request, 'attendance/task_delete.html', context)
 
 @login_required
 def attendance_stats(request):
@@ -125,20 +175,20 @@ def attendance_stats(request):
     # Calculate attendance stats for each member
     member_stats = []
     for member in team_members:
-        attendance_records = AttendanceRecord.objects.filter(user=member)
-        total_sessions = attendance_records.count()
-        present_sessions = attendance_records.filter(present=True).count()
-        attendance_rate = (present_sessions / total_sessions * 100) if total_sessions > 0 else 0
+        attendance_records = AttendanceRecord.objects.filter(member=member)
+        total_records = attendance_records.count()
+        present_records = attendance_records.filter(status='Present').count()
+        attendance_rate = (present_records / total_records * 100) if total_records > 0 else 0
         
         member_stats.append({
             'member': member,
-            'total_sessions': total_sessions,
-            'present_sessions': present_sessions,
+            'total_records': total_records,
+            'present_records': present_records,
             'attendance_rate': round(attendance_rate, 1)
         })
     
     context = {
         'member_stats': member_stats,
-        'total_sessions': AttendanceSession.objects.count()
+        'total_records': AttendanceRecord.objects.count()
     }
     return render(request, 'attendance/stats.html', context)

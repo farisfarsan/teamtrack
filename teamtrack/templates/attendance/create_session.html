@@ -1,44 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Create Attendance Session - GRYTT{% endblock %}
+{% block title %}Add Attendance Record - GRYTT{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">
-                    <i class="fas fa-plus"></i> Create Attendance Session
-                </h4>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Add Attendance Record</h2>
+                <p class="text-muted mb-0">Create a new attendance record for a team member</p>
             </div>
+            <div>
+                <a href="{% url 'attendance:list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Records
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Session Title *</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                        <div class="form-text">Enter a descriptive title for this attendance session</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="member" class="form-label">Team Member</label>
+                                <select class="form-select" id="member" name="member" required>
+                                    <option value="">Select a team member</option>
+                                    {% for member in team_members %}
+                                        <option value="{{ member.id }}">{{ member.name }} ({{ member.get_team_display }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                        <div class="form-text">Optional description for this session</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="">Select status</option>
+                                    <option value="Present">Present</option>
+                                    <option value="Absent">Absent</option>
+                                    <option value="Late">Late</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="scheduled_at" class="form-label">Session Date & Time *</label>
-                        <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" required>
-                        <div class="form-text">When will this attendance session take place?</div>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Note:</strong> All active team members will be automatically included in this attendance session.
-                    </div>
-                    
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Create Session
+                            <i class="fas fa-save"></i> Create Record
                         </button>
                         <a href="{% url 'attendance:list' %}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Cancel

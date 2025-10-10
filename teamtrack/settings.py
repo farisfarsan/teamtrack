@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "notifications",
     "dashboard",
     "meetings",
+    "attendance",
 ]
 
 # ---------------------------------------------------------
@@ -82,8 +83,15 @@ WSGI_APPLICATION = "teamtrack.wsgi.application"
 # ---------------------------------------------------------
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", conn_max_age=600
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", 
+        conn_max_age=600,
+        conn_health_checks=True,
     )
+}
+
+# Database optimization settings (SQLite compatible)
+DATABASES['default']['OPTIONS'] = {
+    'timeout': 20,
 }
 
 # ---------------------------------------------------------
@@ -136,4 +144,57 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+}
+
+# ---------------------------------------------------------
+# CACHING
+# ---------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+        "TIMEOUT": 300,  # 5 minutes
+        "OPTIONS": {
+            "MAX_ENTRIES": 1000,
+            "CULL_FREQUENCY": 3,
+        }
+    }
+}
+
+# ---------------------------------------------------------
+# PERFORMANCE OPTIMIZATIONS
+# ---------------------------------------------------------
+# Session optimization
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_CACHE_ALIAS = "default"
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# Security optimizations
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+# Logging optimization
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "django.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
 }

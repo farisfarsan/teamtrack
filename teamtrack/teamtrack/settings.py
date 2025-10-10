@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "notifications",
     "dashboard",
     "attendance",
-    "attendence1",
 ]
 
 # ---------------------------------------------------------

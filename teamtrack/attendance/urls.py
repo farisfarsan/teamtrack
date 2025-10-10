@@ -5,8 +5,9 @@ app_name = "attendance"
 
 urlpatterns = [
     path("", views.attendance_list, name="list"),
-    path("create/", views.create_session, name="create"),
-    path("<int:pk>/", views.session_detail, name="detail"),
-    path("<int:pk>/mark/", views.mark_attendance, name="mark"),
+    path("mark/", views.mark_attendance, name="mark"),
+    path("create/", views.create_record, name="create"),
+    path("<int:pk>/edit/", views.edit_record, name="edit"),
+    path("<int:pk>/delete/", views.delete_record, name="delete"),
     path("stats/", views.attendance_stats, name="stats"),
 ]
