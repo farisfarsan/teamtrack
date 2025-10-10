@@ -103,6 +103,8 @@ DATABASES = {
 # AUTHENTICATION
 # ---------------------------------------------------------
 # AUTH_USER_MODEL = "teamtrack.accounts.User"  # Using default User model
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/attendance/'
 
 # ---------------------------------------------------------
 # INTERNATIONALIZATION
