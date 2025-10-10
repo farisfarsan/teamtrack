@@ -1,4 +1,5 @@
 services:
+  # Updated deployment configuration
   - type: web
     name: teamtrack
     env: python
