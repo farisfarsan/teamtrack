@@ -12,8 +12,8 @@
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
                     <i class="fas fa-check-circle"></i> Mark Attendance
                 </button>
-                <a href="{% url 'attendance:stats' %}" class="btn btn-info">
-                    <i class="fas fa-chart-bar"></i> View Stats
+                <a href="/admin/" class="btn btn-info">
+                    <i class="fas fa-cog"></i> Admin Panel
                 </a>
             </div>
         </div>
@@ -72,18 +72,18 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
-                                                {{ record.member.name|first|upper }}
+                                                {{ record.member.username|first|upper }}
                                             </div>
                                             <div>
-                                                <strong>{{ record.member.name }}</strong>
+                                                <strong>{{ record.member.username }}</strong>
                                                 <br><small class="text-muted">{{ record.member.email }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td><span class="badge bg-secondary">{{ record.member.get_team_display }}</span></td>
+                                    <td><span class="badge bg-secondary">Member</span></td>
                                     <td>
                                         <span class="badge bg-{% if record.is_present %}success{% elif record.is_absent %}danger{% else %}warning{% endif %}">
-                                            {{ record.get_status_display }}
+                                            {{ record.status }}
                                         </span>
                                     </td>
                                 </tr>
@@ -139,10 +139,10 @@
                                 <div class="card h-100 text-center member-card-inner">
                                     <div class="card-body d-flex flex-column justify-content-center">
                                         <div class="avatar-lg bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
-                                            {{ member.name|first|upper }}
+                                            {{ member.username|first|upper }}
                                         </div>
-                                        <h6 class="card-title mb-1">{{ member.name }}</h6>
-                                        <small class="text-muted">{{ member.get_team_display }}</small>
+                                        <h6 class="card-title mb-1">{{ member.username }}</h6>
+                                        <small class="text-muted">Member</small>
                                         <input type="checkbox" name="present_users[]" value="{{ member.id }}" 
                                                class="form-check-input mt-2 member-checkbox" 
                                                {% if member.id|stringformat:"s" in present_user_ids %}checked{% endif %}>
