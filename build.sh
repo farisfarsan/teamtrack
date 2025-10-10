@@ -13,3 +13,6 @@ python manage.py collectstatic --noinput --settings=settings_render
 
 # Run migrations
 python manage.py migrate --settings=settings_render
+
+# Create admin user
+python manage.py create_admin --settings=settings_render
