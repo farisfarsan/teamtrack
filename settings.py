@@ -125,7 +125,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ---------------------------------------------------------
 # CUSTOM USER MODEL
 # ---------------------------------------------------------
-AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "teamtrack.accounts.User"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"

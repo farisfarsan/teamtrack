@@ -1,6 +1,6 @@
 from django.db import models
-from accounts.models import User
-from core.constants import TEAMS, TASK_STATUS, TASK_PRIORITY, TASK_COMMENT_TYPES, TASK_ATTACHMENT_PATH
+from teamtrack.accounts.models import User
+from teamtrack.core.constants import TEAMS, TASK_STATUS, TASK_PRIORITY, TASK_COMMENT_TYPES, TASK_ATTACHMENT_PATH
 
 class Task(models.Model):
     STATUS = TASK_STATUS
