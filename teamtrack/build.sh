@@ -9,13 +9,13 @@ pip install --upgrade pip
 pip install -r requirements.txt --no-cache-dir
 
 # Collect static files
-python manage.py collectstatic --noinput --settings=settings_render
+python teamtrack/manage.py collectstatic --noinput --settings=teamtrack.settings_render
 
 # Run migrations
-python manage.py migrate --settings=settings_render
+python teamtrack/manage.py migrate --settings=teamtrack.settings_render
 
 # Create users for production
-python manage.py setup_render_users --settings=settings_render
+python teamtrack/manage.py setup_render_users --settings=teamtrack.settings_render
 
 # Test authentication
-python manage.py test_auth --settings=settings_render
+python teamtrack/manage.py test_auth --settings=teamtrack.settings_render
