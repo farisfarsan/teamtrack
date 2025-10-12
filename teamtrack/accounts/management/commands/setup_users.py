@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from teamtrack.accounts.models import User
+from accounts.models import User
 
 class Command(BaseCommand):
     help = 'Check and create users from the provided list'

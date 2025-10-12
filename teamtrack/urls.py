@@ -19,7 +19,7 @@ def keep_alive_view(request):
 
 def health_view(request):
     """Health check endpoint for Render"""
-    from teamtrack.health import health_check
+    from health import health_check
     return health_check(request)
 
 urlpatterns = [
