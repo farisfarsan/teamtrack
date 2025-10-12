@@ -1,7 +1,11 @@
 from pathlib import Path
 import os
+import sys
 import dj_database_url
 from dotenv import load_dotenv
+
+# Add teamtrack directory to Python path
+sys.path.insert(0, str(Path(__file__).resolve().parent / "teamtrack"))
 
 # Load environment variables
 load_dotenv()
@@ -47,12 +51,12 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
-    "teamtrack.accounts",
-    "teamtrack.core",
-    "teamtrack.tasks",
-    "teamtrack.notifications",
-    "teamtrack.dashboard",
-    "teamtrack.attendance",
+    "accounts",
+    "core",
+    "tasks",
+    "notifications",
+    "dashboard",
+    "attendance",
 ]
 
 # ---------------------------------------------------------
