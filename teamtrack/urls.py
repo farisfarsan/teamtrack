@@ -19,7 +19,7 @@ def keep_alive_view(request):
 
 def health_view(request):
     """Health check endpoint for Render"""
-    from teamtrack.teamtrack.health import health_check
+    from teamtrack.health import health_check
     return health_check(request)
 
 urlpatterns = [
@@ -31,11 +31,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Apps (each must have app_name defined in its urls.py)
-    path("accounts/", include(("teamtrack.accounts.urls", "accounts"), namespace="accounts")),
-    path("tasks/", include(("teamtrack.tasks.urls", "tasks"), namespace="tasks")),
-    path("notifications/", include(("teamtrack.notifications.urls", "notifications"), namespace="notifications")),
-    path("dashboard/", include(("teamtrack.dashboard.urls", "dashboard"), namespace="dashboard")),
-    path("attendance/", include(("teamtrack.attendance.urls", "attendance"), namespace="attendance")),
+    path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("tasks/", include(("tasks.urls", "tasks"), namespace="tasks")),
+    path("notifications/", include(("notifications.urls", "notifications"), namespace="notifications")),
+    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
+    path("attendance/", include(("attendance.urls", "attendance"), namespace="attendance")),
 ]
 
 # Serve media files in development and production

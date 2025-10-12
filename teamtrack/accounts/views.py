@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import User
-from teamtrack.core.utils import PermissionMixin
+from core.utils import PermissionMixin
 
 def login_view(request):
     if request.method == "POST":

@@ -7,13 +7,13 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.db import transaction
 from .models import Task, TaskComment
-from teamtrack.accounts.models import User
-from teamtrack.notifications.models import Notification
-from teamtrack.core.utils import (
+from accounts.models import User
+from notifications.models import Notification
+from core.utils import (
     PermissionMixin, TaskFilterMixin, PaginationMixin, NotificationMixin,
     get_context_with_filters, handle_task_creation
 )
-from teamtrack.core.constants import ITEMS_PER_PAGE
+from core.constants import ITEMS_PER_PAGE
 
 @login_required
 def task_list(request):

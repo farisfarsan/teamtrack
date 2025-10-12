@@ -54,12 +54,12 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
-    "teamtrack.accounts",
-    "teamtrack.tasks",
-    "teamtrack.notifications",
-    "teamtrack.dashboard",
-    "teamtrack.attendance",
-    "teamtrack.core",
+    "accounts",
+    "tasks",
+    "notifications",
+    "dashboard",
+    "attendance",
+    "core",
 ]
 
 # ---------------------------------------------------------

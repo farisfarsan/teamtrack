@@ -3,9 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from teamtrack.accounts.models import User
-from teamtrack.tasks.models import Task
-from teamtrack.notifications.models import Notification
+from accounts.models import User
+from tasks.models import Task
+from notifications.models import Notification
 
 @login_required
 def home_redirect(request):

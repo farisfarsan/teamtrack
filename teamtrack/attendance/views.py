@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Q
 from .models import AttendanceRecord
-from teamtrack.accounts.models import User
+from accounts.models import User
 
 @login_required
 def attendance_list(request):
@@ -63,7 +63,7 @@ def mark_attendance(request):
             )
             
             # Create notification for each member
-            from teamtrack.core.utils import NotificationMixin
+            from core.utils import NotificationMixin
             NotificationMixin.notify_attendance_marked(member, date, status, request.user)
         
         # Create summary notification for manager

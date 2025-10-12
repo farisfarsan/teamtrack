@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from teamtrack.accounts.models import User
-from teamtrack.core.utils import NotificationMixin
+from accounts.models import User
+from core.utils import NotificationMixin
 from datetime import date
 
 

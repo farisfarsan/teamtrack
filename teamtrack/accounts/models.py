@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from teamtrack.core.constants import TEAMS
+from core.constants import TEAMS
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra):
