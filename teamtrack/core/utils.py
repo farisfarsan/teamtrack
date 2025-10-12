@@ -164,8 +164,8 @@ def get_context_with_filters(request, **extra_context):
 
 def handle_task_creation(request, task_data):
     """Handle task creation with proper error handling and notifications."""
-    from accounts.models import User
-    from tasks.models import Task
+    from teamtrack.accounts.models import User
+    from teamtrack.tasks.models import Task
     from .constants import TASK_PRIORITY, TEAMS
     
     title = task_data.get('title', '').strip()
