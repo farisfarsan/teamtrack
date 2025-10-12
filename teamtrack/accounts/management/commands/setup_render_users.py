@@ -24,8 +24,14 @@ class Command(BaseCommand):
                     self.style.SUCCESS(f'Created admin user: {admin_email}')
                 )
             else:
+                # Update existing admin user password
+                admin_user = User.objects.get(email=admin_email)
+                admin_user.set_password(admin_password)
+                admin_user.is_staff = True
+                admin_user.is_superuser = True
+                admin_user.save()
                 self.stdout.write(
-                    self.style.WARNING(f'Admin user {admin_email} already exists')
+                    self.style.SUCCESS(f'Updated admin user password: {admin_email}')
                 )
 
             # Create test users
@@ -53,8 +59,14 @@ class Command(BaseCommand):
                         self.style.SUCCESS(f'Created user: {user_data["name"]} ({user_data["email"]})')
                     )
                 else:
+                    # Update existing user password
+                    user = User.objects.get(email=user_data['email'])
+                    user.set_password('password123')
+                    user.name = user_data['name']
+                    user.team = user_data['team']
+                    user.save()
                     self.stdout.write(
-                        self.style.WARNING(f'User {user_data["email"]} already exists')
+                        self.style.SUCCESS(f'Updated user: {user_data["name"]} ({user_data["email"]})')
                     )
 
         self.stdout.write(
