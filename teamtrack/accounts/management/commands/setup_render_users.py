@@ -34,24 +34,25 @@ class Command(BaseCommand):
                     self.style.SUCCESS(f'Updated admin user password: {admin_email}')
                 )
 
-            # Create test users
+            # Create test users with correct emails and passwords
             test_users = [
-                {'email': 'faris@example.com', 'name': 'Faris Mullen', 'team': 'PROJECT_MANAGER'},
-                {'email': 'syam@example.com', 'name': 'Syam Murali', 'team': 'PROJECT_MANAGER'},
-                {'email': 'thabsheer@example.com', 'name': 'Thabsheer', 'team': 'TECH'},
-                {'email': 'vivek@example.com', 'name': 'Vivek Purayath', 'team': 'TECH'},
-                {'email': 'jaseel@example.com', 'name': 'Jaseel', 'team': 'TECH'},
-                {'email': 'sreehari@example.com', 'name': 'Sreehari', 'team': 'TECH'},
-                {'email': 'dileep@example.com', 'name': 'Dileep Krishnan', 'team': 'TECH'},
-                {'email': 'febi@example.com', 'name': 'Febi Wilson Vazhakkan', 'team': 'TECH'},
-                {'email': 'vyshak@example.com', 'name': 'Vyshak PK', 'team': 'TECH'},
+                {'email': 'farismullen93@gmail.com', 'name': 'Faris Mullen', 'team': 'PROJECT_MANAGER', 'password': 'faris123'},
+                {'email': 'muralisyam1@gmail.com', 'name': 'Syam Murali', 'team': 'PROJECT_MANAGER', 'password': 'syam123'},
+                {'email': 'thabsheeron@gmail.com', 'name': 'Thabsheer', 'team': 'TECH', 'password': 'thabsheer123'},
+                {'email': 'purayathvivek@gmail.com', 'name': 'Vivek Purayath', 'team': 'PRODUCT_MANAGEMENT', 'password': 'vivek123'},
+                {'email': 'jasa542000@gmail.com', 'name': 'Jaseel', 'team': 'MARKETING', 'password': 'jaseel123'},
+                {'email': 'grytt.sreehari@gmail.com', 'name': 'Sreehari', 'team': 'TECH', 'password': 'sreehari123'},
+                {'email': 'dileepkrishnan92@gmail.com', 'name': 'Dileep Krishnan', 'team': 'DESIGN', 'password': 'dileep123'},
+                {'email': 'febiwilsonvazhakkan@gmail.com', 'name': 'Febi Wilson Vazhakkan', 'team': 'DESIGN', 'password': 'febi123'},
+                {'email': 'vyshakpk10@gmail.com', 'name': 'Vyshak PK', 'team': 'TECH', 'password': 'vyshak123'},
+                {'email': 'test@example.com', 'name': 'Test User', 'team': 'TECH', 'password': 'test123'},
             ]
 
             for user_data in test_users:
                 if not User.objects.filter(email=user_data['email']).exists():
                     user = User.objects.create_user(
                         email=user_data['email'],
-                        password='password123',
+                        password=user_data['password'],
                         name=user_data['name'],
                         team=user_data['team']
                     )
@@ -61,7 +62,7 @@ class Command(BaseCommand):
                 else:
                     # Update existing user password
                     user = User.objects.get(email=user_data['email'])
-                    user.set_password('password123')
+                    user.set_password(user_data['password'])
                     user.name = user_data['name']
                     user.team = user_data['team']
                     user.save()
