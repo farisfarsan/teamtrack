@@ -62,7 +62,7 @@ ROOT_URLCONF = "urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # global templates folder
+        "DIRS": [BASE_DIR / "templates", BASE_DIR / "teamtrack" / "templates"],  # global templates folder
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

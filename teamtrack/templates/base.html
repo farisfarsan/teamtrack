@@ -51,16 +51,21 @@
             {% if user.team == 'PROJECT_MANAGER' %}
             <a class="nav-link d-inline-block {% if '/attendance' in request.path %}active{% endif %}" href="{% url 'attendance:list' %}">Attendance</a>
             {% endif %}
-            <a class="nav-link d-inline-block {% if '/notifications' in request.path %}active{% endif %}" href="{% url 'notifications:list' %}">Notifications</a>
+            <a class="nav-link d-inline-block {% if '/notifications' in request.path %}active{% endif %}" href="{% url 'notifications:list' %}">
+                <i class="fas fa-bell"></i> Notifications
+            </a>
             <a class="nav-link d-inline-block" href="{% url 'accounts:profile' %}">
                 <i class="fas fa-user"></i> {{ user.name }}
             </a>
             <a class="nav-link d-inline-block" href="{% url 'accounts:profile_update' %}">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a class="nav-link d-inline-block" href="{% url 'accounts:logout' %}">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+            <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="nav-link d-inline-block btn btn-link text-decoration-none p-0 border-0" style="color: #e0f2f1 !important;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
         </div>
     </nav>
 

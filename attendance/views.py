@@ -68,7 +68,7 @@ def mark_attendance(request):
         })
     
     # GET request - show the marking interface
-    team_members = User.objects.filter(is_active=True).order_by('username')
+    team_members = User.objects.filter(is_active=True).order_by('name')
     today = timezone.now().date()
     
     # Get existing attendance for today

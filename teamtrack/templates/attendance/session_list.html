@@ -139,10 +139,10 @@
                                 <div class="card h-100 text-center member-card-inner">
                                     <div class="card-body d-flex flex-column justify-content-center">
                                         <div class="avatar-lg bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3">
-                                            {{ member.username|first|upper }}
+                                            {{ member.name|first|upper }}
                                         </div>
-                                        <h6 class="card-title mb-1">{{ member.username }}</h6>
-                                        <small class="text-muted">Member</small>
+                                        <h6 class="card-title mb-1">{{ member.name }}</h6>
+                                        <small class="text-muted">{{ member.get_team_display }}</small>
                                         <input type="checkbox" name="present_users[]" value="{{ member.id }}" 
                                                class="form-check-input mt-2 member-checkbox" 
                                                {% if member.id|stringformat:"s" in present_user_ids %}checked{% endif %}>

@@ -26,7 +26,7 @@ def attendance_list(request):
         attendance_by_date[date_key].append(record)
     
     # Get team members for creating new records
-    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+    team_members = User.objects.filter(is_active=True)
     
     context = {
         'attendance_by_date': attendance_by_date,
@@ -51,7 +51,7 @@ def mark_attendance(request):
             return JsonResponse({'error': 'Date is required.'}, status=400)
         
         # Get all team members
-        team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER')
+        team_members = User.objects.filter(is_active=True)
         
         # Create/update attendance records
         for member in team_members:
@@ -61,6 +61,16 @@ def mark_attendance(request):
                 date=date,
                 defaults={'status': status}
             )
+            
+            # Create notification for each member
+            from teamtrack.core.utils import NotificationMixin
+            NotificationMixin.notify_attendance_marked(member, date, status, request.user)
+        
+        # Create summary notification for manager
+        from teamtrack.core.utils import NotificationMixin
+        NotificationMixin.notify_attendance_summary(
+            request.user, date, len(present_user_ids), team_members.count()
+        )
         
         return JsonResponse({
             'success': True,
@@ -70,7 +80,7 @@ def mark_attendance(request):
         })
     
     # GET request - show the marking interface
-    team_members = User.objects.filter(is_active=True).exclude(team='PROJECT_MANAGER').order_by('name')
+    team_members = User.objects.filter(is_active=True).order_by('name')
     today = timezone.now().date()
     
     # Get existing attendance for today

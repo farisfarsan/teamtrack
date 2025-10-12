@@ -85,7 +85,7 @@ class NotificationMixin:
     @staticmethod
     def create_notification(recipient, message):
         """Create a notification for a user."""
-        from notifications.models import Notification
+        from teamtrack.notifications.models import Notification
         return Notification.objects.create(
             recipient=recipient,
             message=message
@@ -125,6 +125,30 @@ class NotificationMixin:
         
         message = f'New comment on task "{task.title}" by {author.name}: {comment.message[:50]}...'
         return NotificationMixin.create_notification(recipient, message)
+    
+    @staticmethod
+    def notify_attendance_marked(member, date, status, marked_by):
+        """Create notification for attendance marking."""
+        message = f'Your attendance for {date} has been marked as {status} by {marked_by.name}'
+        return NotificationMixin.create_notification(member, message)
+    
+    @staticmethod
+    def notify_attendance_reminder(member, date):
+        """Create notification for attendance reminder."""
+        message = f'Reminder: Please mark your attendance for {date}'
+        return NotificationMixin.create_notification(member, message)
+    
+    @staticmethod
+    def notify_attendance_summary(manager, date, present_count, total_count):
+        """Create notification for attendance summary to manager."""
+        message = f'Attendance summary for {date}: {present_count}/{total_count} members present'
+        return NotificationMixin.create_notification(manager, message)
+    
+    @staticmethod
+    def notify_attendance_session_created(manager, session_name, date):
+        """Create notification for new attendance session."""
+        message = f'New attendance session "{session_name}" created for {date}'
+        return NotificationMixin.create_notification(manager, message)
 
 
 def get_context_with_filters(request, **extra_context):

@@ -16,8 +16,13 @@ def login_view(request):
     return render(request, "accounts/login.html")
 
 def logout_view(request):
-    logout(request)
-    return redirect("accounts:login")
+    if request.method == 'POST':
+        logout(request)
+        return redirect("accounts:login")
+    else:
+        # Handle GET requests by showing a confirmation or redirecting
+        logout(request)
+        return redirect("accounts:login")
 
 @login_required
 def profile_view(request):
