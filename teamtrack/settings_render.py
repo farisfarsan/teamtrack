@@ -47,12 +47,12 @@ INSTALLED_APPS = [
     "crispy_forms",
 
     # Local apps
-    "accounts",
-    "tasks",
-    "notifications",
-    "dashboard",
-    "meetings",
-    "attendance",
+    "teamtrack.accounts",
+    "teamtrack.tasks",
+    "teamtrack.notifications",
+    "teamtrack.dashboard",
+    "teamtrack.attendance",
+    "teamtrack.core",
 ]
 
 # ---------------------------------------------------------
@@ -77,7 +77,7 @@ ROOT_URLCONF = "teamtrack.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "templates", BASE_DIR / "teamtrack" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -108,6 +108,14 @@ DATABASES = {
 # AUTHENTICATION
 # ---------------------------------------------------------
 AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # ---------------------------------------------------------
 # INTERNATIONALIZATION
