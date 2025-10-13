@@ -6,7 +6,11 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-1">Attendance Records</h2>
+                {% if is_manager_or_admin %}
                 <p class="text-muted mb-0">Manage team member attendance</p>
+                {% else %}
+                <p class="text-muted mb-0">Your personal attendance records</p>
+                {% endif %}
             </div>
             <div class="d-flex gap-2">
                 {% if user.team == 'PROJECT_MANAGER' or user.is_superuser %}
@@ -28,7 +32,11 @@
                 <div class="card bg-primary text-white">
                     <div class="card-body text-center">
                         <h3 class="mb-0">{{ total_members }}</h3>
+                        {% if is_manager_or_admin %}
                         <p class="mb-0">Team Members</p>
+                        {% else %}
+                        <p class="mb-0">Your Records</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -44,7 +52,11 @@
                 <div class="card bg-info text-white">
                     <div class="card-body text-center">
                         <h3 class="mb-0">{{ active_members }}</h3>
+                        {% if is_manager_or_admin %}
                         <p class="mb-0">Active Members</p>
+                        {% else %}
+                        <p class="mb-0">Present Days</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -65,8 +77,12 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
+                                    {% if is_manager_or_admin %}
                                     <th>Member</th>
                                     <th>Team</th>
+                                    {% else %}
+                                    <th>Date</th>
+                                    {% endif %}
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -74,19 +90,33 @@
                                 {% for record in records_on_date %}
                                 <tr>
                                     <td>
+                                        {% if is_manager_or_admin %}
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
-                                                {{ record.member.username|first|upper }}
+                                                {{ record.member.name|first|upper }}
                                             </div>
                                             <div>
-                                                <strong>{{ record.member.username }}</strong>
+                                                <strong>{{ record.member.name }}</strong>
                                                 <br><small class="text-muted">{{ record.member.email }}</small>
                                             </div>
                                         </div>
+                                        {% else %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                {{ record.member.name|first|upper }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ record.date|date:"F d, Y" }}</strong>
+                                                <br><small class="text-muted">{{ record.date|date:"l" }}</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
                                     </td>
-                                    <td><span class="badge bg-secondary">Member</span></td>
+                                    {% if is_manager_or_admin %}
+                                    <td><span class="badge bg-secondary">{{ record.member.get_team_display }}</span></td>
+                                    {% endif %}
                                     <td>
-                                        <span class="badge bg-{% if record.is_present %}success{% elif record.is_absent %}danger{% else %}warning{% endif %}">
+                                        <span class="badge bg-{% if record.status == 'Present' %}success{% else %}danger{% endif %}">
                                             {{ record.status }}
                                         </span>
                                     </td>
@@ -99,11 +129,16 @@
                 {% empty %}
                 <div class="text-center py-5">
                     <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    {% if is_manager_or_admin %}
                     <h5 class="text-muted">No attendance records yet</h5>
                     <p class="text-muted">Mark attendance for your team members to start tracking.</p>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
                         <i class="fas fa-check-circle"></i> Mark First Attendance
                     </button>
+                    {% else %}
+                    <h5 class="text-muted">No attendance records yet</h5>
+                    <p class="text-muted">Your attendance will appear here once marked by your manager.</p>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

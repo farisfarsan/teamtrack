@@ -9,11 +9,23 @@ from accounts.models import User
 
 @login_required
 def attendance_list(request):
-    """List all attendance records"""
-    # All authenticated users can view attendance records
+    """List attendance records - all records for managers/admins, own records for members"""
     
-    # Get attendance records grouped by date
-    records = AttendanceRecord.objects.all().order_by('-date', 'member__name')
+    # Check if user is manager or admin
+    is_manager_or_admin = request.user.team == 'PROJECT_MANAGER' or request.user.is_superuser
+    
+    if is_manager_or_admin:
+        # Managers/admins can see all attendance records
+        records = AttendanceRecord.objects.all().order_by('-date', 'member__name')
+        team_members = User.objects.filter(is_active=True)
+        total_members = team_members.count()
+        active_members = team_members.filter(attendance_records__status='Present').distinct().count()
+    else:
+        # Regular members can only see their own attendance records
+        records = AttendanceRecord.objects.filter(member=request.user).order_by('-date')
+        team_members = User.objects.filter(id=request.user.id)
+        total_members = 1
+        active_members = 1 if records.filter(status='Present').exists() else 0
     
     # Group records by date
     attendance_by_date = {}
@@ -23,15 +35,13 @@ def attendance_list(request):
             attendance_by_date[date_key] = []
         attendance_by_date[date_key].append(record)
     
-    # Get team members for creating new records
-    team_members = User.objects.filter(is_active=True)
-    
     context = {
         'attendance_by_date': attendance_by_date,
         'team_members': team_members,
-        'total_members': team_members.count(),
+        'total_members': total_members,
         'total_records': records.count(),
-        'active_members': team_members.filter(attendance_records__status='Present').distinct().count()
+        'active_members': active_members,
+        'is_manager_or_admin': is_manager_or_admin,
     }
     return render(request, 'attendance/session_list.html', context)
 
