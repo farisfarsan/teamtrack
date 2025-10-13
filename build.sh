@@ -14,6 +14,9 @@ python manage.py collectstatic --noinput --settings=settings_render
 # Run migrations
 python manage.py migrate --settings=settings_render
 
+# Clean up fake users and update team assignments
+python manage.py cleanup_fake_users --settings=settings_render
+
 # Create users for production
 python manage.py setup_render_users --settings=settings_render
 

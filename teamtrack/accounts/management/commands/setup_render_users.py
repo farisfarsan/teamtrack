@@ -34,18 +34,17 @@ class Command(BaseCommand):
                     self.style.SUCCESS(f'Updated admin user password: {admin_email}')
                 )
 
-            # Create test users with correct emails and passwords
+            # Create users with correct emails, teams, and admin privileges
             test_users = [
-                {'email': 'farismullen93@gmail.com', 'name': 'Faris Mullen', 'team': 'PROJECT_MANAGER', 'password': 'faris123'},
-                {'email': 'muralisyam1@gmail.com', 'name': 'Syam Murali', 'team': 'PROJECT_MANAGER', 'password': 'syam123'},
-                {'email': 'thabsheeron@gmail.com', 'name': 'Thabsheer', 'team': 'TECH', 'password': 'thabsheer123'},
-                {'email': 'purayathvivek@gmail.com', 'name': 'Vivek Purayath', 'team': 'PRODUCT_MANAGEMENT', 'password': 'vivek123'},
-                {'email': 'jasa542000@gmail.com', 'name': 'Jaseel', 'team': 'MARKETING', 'password': 'jaseel123'},
-                {'email': 'grytt.sreehari@gmail.com', 'name': 'Sreehari', 'team': 'TECH', 'password': 'sreehari123'},
-                {'email': 'dileepkrishnan92@gmail.com', 'name': 'Dileep Krishnan', 'team': 'DESIGN', 'password': 'dileep123'},
-                {'email': 'febiwilsonvazhakkan@gmail.com', 'name': 'Febi Wilson Vazhakkan', 'team': 'DESIGN', 'password': 'febi123'},
-                {'email': 'vyshakpk10@gmail.com', 'name': 'Vyshak PK', 'team': 'TECH', 'password': 'vyshak123'},
-                {'email': 'test@example.com', 'name': 'Test User', 'team': 'TECH', 'password': 'test123'},
+                {'email': 'farismullen93@gmail.com', 'name': 'Faris Mullen', 'team': 'PROJECT_MANAGER', 'password': 'faris123', 'is_admin': False},
+                {'email': 'muralisyam1@gmail.com', 'name': 'Syam Murali', 'team': 'DESIGN', 'password': 'syam123', 'is_admin': True},
+                {'email': 'thabsheeron@gmail.com', 'name': 'Thabsheer', 'team': 'TECH', 'password': 'thabsheer123', 'is_admin': False},
+                {'email': 'purayathvivek@gmail.com', 'name': 'Vivek Purayath', 'team': 'PRODUCT_MANAGEMENT', 'password': 'vivek123', 'is_admin': False},
+                {'email': 'jasa542000@gmail.com', 'name': 'Jaseel', 'team': 'MARKETING', 'password': 'jaseel123', 'is_admin': False},
+                {'email': 'grytt.sreehari@gmail.com', 'name': 'Sreehari', 'team': 'TECH', 'password': 'sreehari123', 'is_admin': False},
+                {'email': 'dileepkrishnan92@gmail.com', 'name': 'Dileep Krishnan', 'team': 'DESIGN', 'password': 'dileep123', 'is_admin': False},
+                {'email': 'febiwilsonvazhakkan@gmail.com', 'name': 'Febi Wilson Vazhakkan', 'team': 'DESIGN', 'password': 'febi123', 'is_admin': False},
+                {'email': 'vyshakpk10@gmail.com', 'name': 'Vyshak PK', 'team': 'TECH', 'password': 'vyshak123', 'is_admin': False},
             ]
 
             for user_data in test_users:
@@ -56,18 +55,27 @@ class Command(BaseCommand):
                         name=user_data['name'],
                         team=user_data['team']
                     )
+                    # Set admin privileges if specified
+                    if user_data.get('is_admin', False):
+                        user.is_superuser = True
+                        user.is_staff = True
+                        user.save()
                     self.stdout.write(
-                        self.style.SUCCESS(f'Created user: {user_data["name"]} ({user_data["email"]})')
+                        self.style.SUCCESS(f'Created user: {user_data["name"]} ({user_data["email"]}) - {"Admin" if user_data.get("is_admin", False) else "Member"}')
                     )
                 else:
-                    # Update existing user password
+                    # Update existing user password and team
                     user = User.objects.get(email=user_data['email'])
                     user.set_password(user_data['password'])
                     user.name = user_data['name']
                     user.team = user_data['team']
+                    # Set admin privileges if specified
+                    if user_data.get('is_admin', False):
+                        user.is_superuser = True
+                        user.is_staff = True
                     user.save()
                     self.stdout.write(
-                        self.style.SUCCESS(f'Updated user: {user_data["name"]} ({user_data["email"]})')
+                        self.style.SUCCESS(f'Updated user: {user_data["name"]} ({user_data["email"]}) - {"Admin" if user_data.get("is_admin", False) else "Member"}')
                     )
 
         self.stdout.write(
