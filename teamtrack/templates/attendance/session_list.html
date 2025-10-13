@@ -9,12 +9,16 @@
                 <p class="text-muted mb-0">Manage team member attendance</p>
             </div>
             <div class="d-flex gap-2">
+                {% if user.team == 'PROJECT_MANAGER' or user.is_superuser %}
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
                     <i class="fas fa-check-circle"></i> Mark Attendance
                 </button>
+                {% endif %}
+                {% if user.is_superuser %}
                 <a href="/admin/" class="btn btn-info">
                     <i class="fas fa-cog"></i> Admin Panel
                 </a>
+                {% endif %}
             </div>
         </div>
 

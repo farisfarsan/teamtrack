@@ -10,9 +10,7 @@ from accounts.models import User
 @login_required
 def attendance_list(request):
     """List all attendance records"""
-    if request.user.team != 'PROJECT_MANAGER':
-        messages.error(request, 'Only Project Managers can access attendance management.')
-        return redirect('dashboard:home')
+    # All authenticated users can view attendance records
     
     # Get attendance records grouped by date
     records = AttendanceRecord.objects.all().order_by('-date', 'member__name')
@@ -40,8 +38,8 @@ def attendance_list(request):
 @login_required
 def mark_attendance(request):
     """Modal-based attendance marking"""
-    if request.user.team != 'PROJECT_MANAGER':
-        return JsonResponse({'error': 'Only Project Managers can mark attendance.'}, status=403)
+    if request.user.team != 'PROJECT_MANAGER' and not request.user.is_superuser:
+        return JsonResponse({'error': 'Only Project Managers and Admins can mark attendance.'}, status=403)
     
     if request.method == 'POST':
         date = request.POST.get('date')
