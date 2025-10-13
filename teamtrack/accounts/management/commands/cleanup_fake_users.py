@@ -54,14 +54,14 @@ class Command(BaseCommand):
                         self.style.WARNING(f'User not found: {email}')
                     )
 
-            # Grant admin privileges to Syam Murali
+            # Ensure Syam Murali is a regular member (not admin)
             try:
                 syam = User.objects.get(email='muralisyam1@gmail.com')
-                syam.is_superuser = True
-                syam.is_staff = True
+                syam.is_superuser = False
+                syam.is_staff = False
                 syam.save()
                 self.stdout.write(
-                    self.style.SUCCESS('Granted admin privileges to Syam Murali')
+                    self.style.SUCCESS('Syam Murali set as regular member (not admin)')
                 )
             except User.DoesNotExist:
                 self.stdout.write(

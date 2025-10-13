@@ -126,6 +126,15 @@ def member_dashboard(request):
     # Recent tasks
     recent_tasks = user_tasks.order_by('-created_at')[:5]
     
+    # User's attendance records
+    from attendance.models import AttendanceRecord
+    user_attendance = AttendanceRecord.objects.filter(member=request.user).order_by('-date')[:10]
+    attendance_stats = {
+        'total_records': user_attendance.count(),
+        'present_days': user_attendance.filter(status='Present').count(),
+        'absent_days': user_attendance.filter(status='Absent').count(),
+    }
+    
     data = {
         "tasks": user_tasks,
         "total_tasks": total_tasks,
@@ -139,5 +148,7 @@ def member_dashboard(request):
         "team_tasks": team_tasks,
         "all_team_tasks": all_team_tasks,
         "team_name": request.user.get_team_display(),
+        "user_attendance": user_attendance,
+        "attendance_stats": attendance_stats,
     }
     return render(request,"dashboard/member.html", data)

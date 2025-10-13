@@ -37,7 +37,7 @@ class Command(BaseCommand):
             # Create users with correct emails, teams, and admin privileges
             test_users = [
                 {'email': 'farismullen93@gmail.com', 'name': 'Faris Mullen', 'team': 'PROJECT_MANAGER', 'password': 'faris123', 'is_admin': False},
-                {'email': 'muralisyam1@gmail.com', 'name': 'Syam Murali', 'team': 'DESIGN', 'password': 'syam123', 'is_admin': True},
+                {'email': 'muralisyam1@gmail.com', 'name': 'Syam Murali', 'team': 'DESIGN', 'password': 'syam123', 'is_admin': False},
                 {'email': 'thabsheeron@gmail.com', 'name': 'Thabsheer', 'team': 'TECH', 'password': 'thabsheer123', 'is_admin': False},
                 {'email': 'purayathvivek@gmail.com', 'name': 'Vivek Purayath', 'team': 'PRODUCT_MANAGEMENT', 'password': 'vivek123', 'is_admin': False},
                 {'email': 'jasa542000@gmail.com', 'name': 'Jaseel', 'team': 'MARKETING', 'password': 'jaseel123', 'is_admin': False},
