@@ -128,11 +128,12 @@ def member_dashboard(request):
     
     # User's attendance records
     from attendance.models import AttendanceRecord
-    user_attendance = AttendanceRecord.objects.filter(member=request.user).order_by('-date')[:10]
+    user_attendance_all = AttendanceRecord.objects.filter(member=request.user).order_by('-date')
+    user_attendance = user_attendance_all[:10]
     attendance_stats = {
-        'total_records': user_attendance.count(),
-        'present_days': user_attendance.filter(status='Present').count(),
-        'absent_days': user_attendance.filter(status='Absent').count(),
+        'total_records': user_attendance_all.count(),
+        'present_days': user_attendance_all.filter(status='Present').count(),
+        'absent_days': user_attendance_all.filter(status='Absent').count(),
     }
     
     data = {
