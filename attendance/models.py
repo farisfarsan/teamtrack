@@ -19,10 +19,10 @@ class AttendanceRecord(models.Model):
     
     class Meta:
         unique_together = ['member', 'date']
-        ordering = ['-date', 'member__username']
+        ordering = ['-date', 'member__name']
     
     def __str__(self):
-        return f"{self.member.username} - {self.date} - {self.status}"
+        return f"{self.member.name} - {self.date} - {self.status}"
     
     @property
     def is_present(self):

@@ -106,45 +106,45 @@ def mark_attendance(request):
 def edit_attendance(request, record_id):
     """Edit an existing attendance record"""
     if request.user.team != 'PROJECT_MANAGER' and not request.user.is_superuser:
-        return JsonResponse({'error': 'Only Project Managers and Admins can edit attendance.'}, status=403)
+        messages.error(request, 'Only Project Managers and Admins can edit attendance.')
+        return redirect('attendance:list')
     
-    try:
-        record = AttendanceRecord.objects.get(id=record_id)
-    except AttendanceRecord.DoesNotExist:
-        return JsonResponse({'error': 'Attendance record not found.'}, status=404)
+    record = get_object_or_404(AttendanceRecord, id=record_id)
     
     if request.method == 'POST':
-        new_status = request.POST.get('status')
-        if new_status in ['Present', 'Absent']:
-            record.status = new_status
+        status = request.POST.get('status')
+        if status in ['Present', 'Absent']:
+            record.status = status
             record.save()
-            return JsonResponse({
-                'success': True,
-                'message': f'Attendance for {record.member.name} updated to {new_status}.'
-            })
+            messages.success(request, f'Attendance record updated successfully.')
+            return redirect('attendance:list')
         else:
-            return JsonResponse({'error': 'Invalid status provided.'}, status=400)
+            messages.error(request, 'Invalid status selected.')
     
-    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+    context = {
+        'record': record,
+        'team_members': User.objects.filter(is_active=True).order_by('name')
+    }
+    return render(request, 'attendance/edit_attendance.html', context)
 
 @login_required
 def delete_attendance(request, record_id):
     """Delete an attendance record"""
     if request.user.team != 'PROJECT_MANAGER' and not request.user.is_superuser:
-        return JsonResponse({'error': 'Only Project Managers and Admins can delete attendance.'}, status=403)
+        messages.error(request, 'Only Project Managers and Admins can delete attendance.')
+        return redirect('attendance:list')
     
-    try:
-        record = AttendanceRecord.objects.get(id=record_id)
-    except AttendanceRecord.DoesNotExist:
-        return JsonResponse({'error': 'Attendance record not found.'}, status=404)
+    record = get_object_or_404(AttendanceRecord, id=record_id)
     
     if request.method == 'POST':
         member_name = record.member.name
         record_date = record.date
         record.delete()
-        return JsonResponse({
-            'success': True,
-            'message': f'Attendance record for {member_name} deleted successfully.'
-        })
+        messages.success(request, f'Attendance record for {member_name} on {record_date} has been deleted.')
+        return redirect('attendance:list')
     
-    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+    # Handle GET request - show confirmation page
+    context = {
+        'record': record
+    }
+    return render(request, 'attendance/delete_attendance.html', context)

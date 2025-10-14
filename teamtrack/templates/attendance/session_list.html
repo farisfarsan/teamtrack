@@ -128,18 +128,14 @@
                                     </td>
                                     {% if is_manager_or_admin %}
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-primary me-1 edit-status-btn" 
-                                                data-record-id="{{ record.id }}" 
-                                                data-current-status="{{ record.status }}"
-                                                data-member-name="{{ record.member.name }}">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger delete-record-btn" 
-                                                data-record-id="{{ record.id }}"
-                                                data-member-name="{{ record.member.name }}"
-                                                data-record-date="{{ record.date|date:'Y-m-d' }}">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'attendance:edit' record.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'attendance:delete' record.id %}" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this attendance record?')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </div>
                                     </td>
                                     {% endif %}
                                 </tr>

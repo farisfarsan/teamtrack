@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Edit Attendance - GRYTT{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit"></i> Edit Attendance Record
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Member Info (Read-only) -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Member</label>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                    {{ record.member.name|first|upper }}
+                                </div>
+                                <div>
+                                    <strong>{{ record.member.name }}</strong>
+                                    <br><small class="text-muted">{{ record.member.email }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <input type="text" class="form-control" value="{{ record.date|date:'F d, Y' }}" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Status Selection -->
+                    <div class="mb-4">
+                        <label for="status" class="form-label">Attendance Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Present" {% if record.status == 'Present' %}selected{% endif %}>Present</option>
+                            <option value="Absent" {% if record.status == 'Absent' %}selected{% endif %}>Absent</option>
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Update Record
+                        </button>
+                        <a href="{% url 'attendance:list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
