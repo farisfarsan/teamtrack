@@ -128,12 +128,18 @@
                                     </td>
                                     {% if is_manager_or_admin %}
                                     <td>
-                                        <a href="/admin/attendance/attendancerecord/{{ record.id }}/change/" class="btn btn-sm btn-outline-primary me-1">
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1 edit-status-btn" 
+                                                data-record-id="{{ record.id }}" 
+                                                data-current-status="{{ record.status }}"
+                                                data-member-name="{{ record.member.name }}">
                                             <i class="fas fa-edit"></i> Edit
-                                        </a>
-                                        <a href="/admin/attendance/attendancerecord/{{ record.id }}/delete/" class="btn btn-sm btn-outline-danger">
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-record-btn" 
+                                                data-record-id="{{ record.id }}"
+                                                data-member-name="{{ record.member.name }}"
+                                                data-record-date="{{ record.date|date:'Y-m-d' }}">
                                             <i class="fas fa-trash"></i> Delete
-                                        </a>
+                                        </button>
                                     </td>
                                     {% endif %}
                                 </tr>
@@ -341,6 +347,73 @@ document.addEventListener('DOMContentLoaded', function() {
     checkboxes.forEach(checkbox => {
         const card = checkbox.closest('.member-card');
         updateCardStyle(card, checkbox.checked);
+    });
+
+    // Handle Edit Status button
+    document.querySelectorAll('.edit-status-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const recordId = this.getAttribute('data-record-id');
+            const currentStatus = this.getAttribute('data-current-status');
+            const memberName = this.getAttribute('data-member-name');
+            
+            const newStatus = prompt(`Change attendance status for ${memberName}:\n\nCurrent: ${currentStatus}\n\nEnter 'Present' or 'Absent':`, currentStatus);
+            
+            if (newStatus && (newStatus === 'Present' || newStatus === 'Absent')) {
+                const formData = new FormData();
+                formData.append('status', newStatus);
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                fetch(`/attendance/edit/${recordId}/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating attendance.');
+                });
+            }
+        });
+    });
+
+    // Handle Delete Record button
+    document.querySelectorAll('.delete-record-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const recordId = this.getAttribute('data-record-id');
+            const memberName = this.getAttribute('data-member-name');
+            const recordDate = this.getAttribute('data-record-date');
+            
+            if (confirm(`Are you sure you want to delete the attendance record for ${memberName} on ${recordDate}?`)) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                fetch(`/attendance/delete/${recordId}/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting attendance.');
+                });
+            }
+        });
     });
 });
 </script>
