@@ -84,6 +84,9 @@
                                     <th>Date</th>
                                     {% endif %}
                                     <th>Status</th>
+                                    {% if is_manager_or_admin %}
+                                    <th>Actions</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -120,6 +123,24 @@
                                             {{ record.status }}
                                         </span>
                                     </td>
+                                    {% if is_manager_or_admin %}
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1 edit-attendance-btn"
+                                                data-bs-toggle="modal" data-bs-target="#editAttendanceModal"
+                                                data-record-id="{{ record.id }}"
+                                                data-member-name="{{ record.member.name }}"
+                                                data-record-date="{{ record.date|date:'Y-m-d' }}"
+                                                data-current-status="{{ record.status }}">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-attendance-btn"
+                                                data-record-id="{{ record.id }}"
+                                                data-member-name="{{ record.member.name }}"
+                                                data-record-date="{{ record.date|date:'Y-m-d' }}">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </td>
+                                    {% endif %}
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -204,6 +225,48 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Edit Attendance Modal -->
+{% if user.team == 'PROJECT_MANAGER' or user.is_superuser %}
+<div class="modal fade" id="editAttendanceModal" tabindex="-1" aria-labelledby="editAttendanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="editAttendanceModalLabel">
+                    <i class="fas fa-edit"></i> Edit Attendance Record
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editAttendanceForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Member:</strong></label>
+                        <p id="editMemberName" class="form-control-plaintext"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Date:</strong></label>
+                        <p id="editRecordDate" class="form-control-plaintext"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Status</label>
+                        <select class="form-select" id="editStatus" name="status" required>
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="saveEditBtn">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
             </div>
         </div>
     </div>
@@ -324,6 +387,88 @@ document.addEventListener('DOMContentLoaded', function() {
     checkboxes.forEach(checkbox => {
         const card = checkbox.closest('.member-card');
         updateCardStyle(card, checkbox.checked);
+    });
+
+    // Handle Edit Attendance modal
+    const editAttendanceModal = document.getElementById('editAttendanceModal');
+    if (editAttendanceModal) {
+        editAttendanceModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const recordId = button.getAttribute('data-record-id');
+            const memberName = button.getAttribute('data-member-name');
+            const recordDate = button.getAttribute('data-record-date');
+            const currentStatus = button.getAttribute('data-current-status');
+
+            document.getElementById('editMemberName').textContent = memberName;
+            document.getElementById('editRecordDate').textContent = recordDate;
+            document.getElementById('editStatus').value = currentStatus;
+            
+            // Store record ID for the save button
+            document.getElementById('saveEditBtn').setAttribute('data-record-id', recordId);
+        });
+    }
+
+    // Handle Save Edit button
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', function() {
+            const recordId = this.getAttribute('data-record-id');
+            const status = document.getElementById('editStatus').value;
+            
+            const formData = new FormData();
+            formData.append('status', status);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            fetch(`/attendance/edit/${recordId}/`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating attendance.');
+            });
+        });
+    }
+
+    // Handle Delete Attendance button
+    document.querySelectorAll('.delete-attendance-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const recordId = this.getAttribute('data-record-id');
+            const memberName = this.getAttribute('data-member-name');
+            const recordDate = this.getAttribute('data-record-date');
+            
+            if (confirm(`Are you sure you want to delete the attendance record for ${memberName} on ${recordDate}?`)) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                fetch(`/attendance/delete/${recordId}/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting attendance.');
+                });
+            }
+        });
     });
 });
 </script>

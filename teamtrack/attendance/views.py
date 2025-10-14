@@ -101,3 +101,50 @@ def mark_attendance(request):
         'present_user_ids': present_user_ids
     }
     return render(request, 'attendance/mark_attendance.html', context)
+
+@login_required
+def edit_attendance(request, record_id):
+    """Edit an existing attendance record"""
+    if request.user.team != 'PROJECT_MANAGER' and not request.user.is_superuser:
+        return JsonResponse({'error': 'Only Project Managers and Admins can edit attendance.'}, status=403)
+    
+    try:
+        record = AttendanceRecord.objects.get(id=record_id)
+    except AttendanceRecord.DoesNotExist:
+        return JsonResponse({'error': 'Attendance record not found.'}, status=404)
+    
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in ['Present', 'Absent']:
+            record.status = new_status
+            record.save()
+            return JsonResponse({
+                'success': True,
+                'message': f'Attendance for {record.member.name} on {record.date} updated to {new_status}.'
+            })
+        else:
+            return JsonResponse({'error': 'Invalid status provided.'}, status=400)
+    
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+@login_required
+def delete_attendance(request, record_id):
+    """Delete an attendance record"""
+    if request.user.team != 'PROJECT_MANAGER' and not request.user.is_superuser:
+        return JsonResponse({'error': 'Only Project Managers and Admins can delete attendance.'}, status=403)
+    
+    try:
+        record = AttendanceRecord.objects.get(id=record_id)
+    except AttendanceRecord.DoesNotExist:
+        return JsonResponse({'error': 'Attendance record not found.'}, status=404)
+    
+    if request.method == 'POST':
+        member_name = record.member.name
+        record_date = record.date
+        record.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Attendance record for {member_name} on {record_date} deleted successfully.'
+        })
+    
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
