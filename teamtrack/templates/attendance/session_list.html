@@ -147,6 +147,7 @@
 </div>
 
 <!-- Mark Attendance Modal -->
+{% if user.team == 'PROJECT_MANAGER' or user.is_superuser %}
 <div class="modal fade" id="markAttendanceModal" tabindex="-1" aria-labelledby="markAttendanceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -207,6 +208,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <style>
 .member-card-inner {
