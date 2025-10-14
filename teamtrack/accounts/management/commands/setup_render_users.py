@@ -45,6 +45,7 @@ class Command(BaseCommand):
                 {'email': 'dileepkrishnan92@gmail.com', 'name': 'Dileep Krishnan', 'team': 'DESIGN', 'password': 'dileep123', 'is_admin': False},
                 {'email': 'febiwilsonvazhakkan@gmail.com', 'name': 'Febi Wilson Vazhakkan', 'team': 'DESIGN', 'password': 'febi123', 'is_admin': False},
                 {'email': 'vyshakpk10@gmail.com', 'name': 'Vyshak PK', 'team': 'TECH', 'password': 'vyshak123', 'is_admin': False},
+                {'email': 'kiranmoorkath@gmail.com', 'name': 'Kiran Moorkath', 'team': 'TECH', 'password': 'kiran123', 'is_admin': False},
             ]
 
             for user_data in test_users:
