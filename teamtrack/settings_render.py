@@ -68,6 +68,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # For static files in production
+    "teamtrack.middleware.DatabaseConnectionMiddleware",  # Database connection recovery
+    "teamtrack.middleware.CacheRecoveryMiddleware",  # Cache recovery
+    "teamtrack.middleware.RobustErrorMiddleware",  # Robust error handling
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

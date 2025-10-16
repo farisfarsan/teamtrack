@@ -14,12 +14,13 @@ def favicon_view(request):
     return HttpResponse(status=204)
 
 def keep_alive_view(request):
-    """Keep-alive endpoint for external monitoring services"""
-    return HttpResponse("OK", status=200)
+    """Enhanced keep-alive endpoint for external monitoring services"""
+    from teamtrack.keep_alive_enhanced import keep_alive_enhanced
+    return keep_alive_enhanced(request)
 
 def health_view(request):
-    """Health check endpoint for Render"""
-    from health import health_check
+    """Comprehensive health check endpoint for Render"""
+    from teamtrack.health import health_check
     return health_check(request)
 
 urlpatterns = [

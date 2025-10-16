@@ -1,11 +1,11 @@
 services:
-  # Updated deployment configuration
+  # Enhanced deployment configuration with robust error handling
   - type: web
     name: teamtrack
     env: python
     plan: free
     buildCommand: ./build.sh
-    startCommand: ./start.sh
+    startCommand: ./teamtrack/start_enhanced.sh
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -13,7 +13,10 @@ services:
         value: False
       - key: DJANGO_SETTINGS_MODULE
         value: settings_render
-    healthCheckPath: /attendance/
+      - key: BASE_URL
+        value: https://teamtrack-1.onrender.com
+    healthCheckPath: /health/
+    healthCheckGracePeriod: 300
 
 databases:
   - name: teamtrack-db
