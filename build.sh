@@ -22,18 +22,18 @@ fi
 
 # Collect static files
 echo "📁 Collecting static files..."
-python manage.py collectstatic --noinput --settings=settings_render
+python manage.py collectstatic --noinput --settings=teamtrack.settings_render
 
 # Run migrations
 echo "🔄 Running database migrations..."
-python manage.py migrate --settings=settings_render
+python manage.py migrate --settings=teamtrack.settings_render
 
 # Create users for production
 echo "👥 Setting up users..."
-python manage.py setup_render_users --settings=settings_render
+python manage.py setup_render_users --settings=teamtrack.settings_render
 
 # Test authentication
 echo "🔐 Testing authentication..."
-python manage.py test_auth --settings=settings_render
+python manage.py test_auth --settings=teamtrack.settings_render
 
 echo "✅ Build completed successfully!"
