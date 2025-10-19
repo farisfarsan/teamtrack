@@ -1,11 +1,11 @@
 services:
-  # Enhanced deployment configuration with robust error handling
+  # Bulletproof deployment configuration
   - type: web
     name: teamtrack
     env: python
     plan: free
     buildCommand: ./build.sh
-    startCommand: ./teamtrack/start_enhanced.sh
+    startCommand: ./teamtrack/start_robust.sh
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -15,8 +15,14 @@ services:
         value: settings_render
       - key: BASE_URL
         value: https://teamtrack-1.onrender.com
-    healthCheckPath: /health/
-    healthCheckGracePeriod: 300
+      - key: DATABASE_URL
+        fromDatabase:
+          name: teamtrack-db
+          property: connectionString
+    healthCheckPath: /keep-alive/
+    healthCheckGracePeriod: 600
+    # CRITICAL: Link the database to this service
+    databaseName: teamtrack-db
 
 databases:
   - name: teamtrack-db
