@@ -19,9 +19,9 @@ def keep_alive_view(request):
     return simple_keep_alive(request)
 
 def health_view(request):
-    """Simple health check endpoint for Render"""
-    from teamtrack.simple_health import simple_health_check
-    return simple_health_check(request)
+    """Health check endpoint for PythonAnywhere"""
+    from teamtrack.health import health_check
+    return health_check(request)
 
 def recovery_view(request):
     """Manual recovery endpoint for testing"""
