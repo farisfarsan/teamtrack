@@ -4,6 +4,9 @@ set -o errexit
 
 echo "🔧 Starting build process..."
 
+# Navigate to the teamtrack directory where the Django project is located
+cd teamtrack
+
 # Upgrade pip first
 pip install --upgrade pip
 
