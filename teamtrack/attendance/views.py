@@ -71,14 +71,26 @@ def mark_attendance(request):
             )
             
             # Create notification for each member
-            from core.utils import NotificationMixin
-            NotificationMixin.notify_attendance_marked(member, date, status, request.user)
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    user=member,
+                    message=f'Attendance marked: {status} on {date}',
+                    notification_type='attendance'
+                )
+            except ImportError:
+                pass
         
         # Create summary notification for manager
-        from core.utils import NotificationMixin
-        NotificationMixin.notify_attendance_summary(
-            request.user, date, len(present_user_ids), team_members.count()
-        )
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                user=request.user,
+                message=f'Attendance marked for {date}: {len(present_user_ids)}/{team_members.count()} present',
+                notification_type='attendance_summary'
+            )
+        except ImportError:
+            pass
         
         return JsonResponse({
             'success': True,
