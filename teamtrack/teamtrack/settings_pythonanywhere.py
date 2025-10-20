@@ -12,10 +12,7 @@ load_dotenv()
 # ---------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Add the project root to Python path for PythonAnywhere
-project_root = BASE_DIR.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
+# Python path will be handled by PythonAnywhere environment
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-for-development-only-change-in-production")
 DEBUG = os.getenv("DEBUG", "False") == "True"
@@ -97,19 +94,29 @@ WSGI_APPLICATION = "teamtrack.wsgi.application"
 # ---------------------------------------------------------
 # DATABASE - PythonAnywhere MySQL
 # ---------------------------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'yourusername$teamtrack'),
-        'USER': os.getenv('DB_USER', 'yourusername'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'yourpassword'),
-        'HOST': os.getenv('DB_HOST', 'yourusername.mysql.pythonanywhere.com'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+# Use SQLite for local development, MySQL for PythonAnywhere
+if os.getenv('DJANGO_ENV') == 'production':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME', 'yourusername$teamtrack'),
+            'USER': os.getenv('DB_USER', 'yourusername'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'yourpassword'),
+            'HOST': os.getenv('DB_HOST', 'yourusername.mysql.pythonanywhere.com'),
+            'PORT': os.getenv('DB_PORT', '3306'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+else:
+    # Use SQLite for local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ---------------------------------------------------------
 # AUTHENTICATION
