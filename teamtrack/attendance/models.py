@@ -16,6 +16,7 @@ class AttendanceRecord(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        app_label = 'attendance'
         unique_together = ['member', 'date']
         ordering = ['-date', 'member__name']
     

@@ -11,7 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-# Use Render settings for production
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "teamtrack.settings_render")
+# Use PythonAnywhere settings for production
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "teamtrack.settings_pythonanywhere")
 
 application = get_wsgi_application()
