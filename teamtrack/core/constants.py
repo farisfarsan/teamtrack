@@ -1,43 +1,49 @@
-"""
-Shared constants used across the application to avoid duplication.
-"""
-
-# Team choices used in User and Task models
-TEAMS = (
-    ("PROJECT_MANAGER", "Project Manager"),
-    ("DESIGN", "Design"),
-    ("TECH", "Tech"),
-    ("PRODUCT_MANAGEMENT", "Product Management"),
-    ("MARKETING", "Marketing")
-)
-
-# Task status choices
-TASK_STATUS = [
-    ("PENDING", "Pending"),
-    ("IN_PROGRESS", "In Progress"),
-    ("REVIEW", "Review"),
-    ("COMPLETED", "Completed"),
-    ("BLOCKED", "Blocked")
+# Team constants
+TEAMS = [
+    ('development', 'Development'),
+    ('design', 'Design'),
+    ('marketing', 'Marketing'),
+    ('sales', 'Sales'),
+    ('support', 'Support'),
+    ('management', 'Management'),
 ]
 
-# Task priority choices
+# User roles
+USER_ROLES = [
+    ('admin', 'Admin'),
+    ('manager', 'Manager'),
+    ('member', 'Member'),
+]
+
+# Task priorities
 TASK_PRIORITY = [
-    ("LOW", "Low"),
-    ("MEDIUM", "Medium"),
-    ("HIGH", "High")
+    ('low', 'Low'),
+    ('medium', 'Medium'),
+    ('high', 'High'),
+    ('urgent', 'Urgent'),
+]
+
+# Task statuses
+TASK_STATUS = [
+    ('todo', 'To Do'),
+    ('in_progress', 'In Progress'),
+    ('review', 'Review'),
+    ('done', 'Done'),
 ]
 
 # Task comment types
 TASK_COMMENT_TYPES = [
-    ("PROGRESS", "Progress Update"),
-    ("QUESTION", "Question"),
-    ("BLOCKER", "Blocker"),
-    ("COMPLETION", "Completion Note"),
-    ("GENERAL", "General Comment")
+    ('comment', 'Comment'),
+    ('update', 'Update'),
+    ('note', 'Note'),
 ]
 
-# Pagination settings
-ITEMS_PER_PAGE = 10
+# Task attachment path
+TASK_ATTACHMENT_PATH = 'task_attachments/'
 
-# File upload paths
-TASK_ATTACHMENT_PATH = 'task_attachments/%Y/%m/%d/'
+# Pagination
+ITEMS_PER_PAGE = 20
+
+# Legacy constants for backward compatibility
+TASK_PRIORITIES = TASK_PRIORITY
+TASK_STATUSES = TASK_STATUS
