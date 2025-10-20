@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
+from django.utils import timezone
 
 def root_redirect(request):
     """Redirect root URL to dashboard"""

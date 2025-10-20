@@ -27,13 +27,10 @@ A comprehensive Django-based task management system designed for teams to collab
 - **Deployment**: Render.com
 - **Static Files**: WhiteNoise
 
-## 📋 Quick Start
+## 📋 Quick Start - Local Development
 
-### Development Setup
-
-1. **Clone the repository**
+1. **Navigate to the project directory**
    ```bash
-   git clone <your-repo-url>
    cd teamtrack
    ```
 
@@ -57,9 +54,9 @@ A comprehensive Django-based task management system designed for teams to collab
    python manage.py runserver
    ```
 
-### Production Deployment
-
-See [RENDER_DEPLOYMENT_GUIDE.md](RENDER_DEPLOYMENT_GUIDE.md) for detailed deployment instructions to Render.com.
+6. **Access the application**
+   - Open your browser and go to: `http://127.0.0.1:8000/`
+   - Admin panel: `http://127.0.0.1:8000/admin/`
 
 ## 🔐 Default Credentials
 
@@ -79,12 +76,12 @@ teamtrack/
 ├── meetings/          # Meeting management
 ├── notifications/     # Notification system
 ├── dashboard/         # Dashboard views
+├── attendance/        # Attendance tracking
+├── core/             # Core utilities
 ├── templates/         # HTML templates
 ├── static/           # Static files
 ├── teamtrack/        # Django project settings
-├── build.sh          # Render build script
-├── start.sh          # Render start script
-├── render.yaml       # Render configuration
+├── manage.py         # Django management script
 └── requirements.txt  # Python dependencies
 ```
 
@@ -117,17 +114,13 @@ teamtrack/
 - **Task Analytics**: Progress tracking and completion rates
 - **Team Statistics**: Performance metrics per team
 
-## 🚀 Deployment
+## 🚀 Local Development Notes
 
-This project is optimized for deployment on Render.com with:
-- PostgreSQL database
-- Automatic static file collection
-- Production security settings
-- Environment variable configuration
-
-## 📞 Support
-
-For deployment issues or questions, refer to the [RENDER_DEPLOYMENT_GUIDE.md](RENDER_DEPLOYMENT_GUIDE.md) or check the Render documentation.
+This project is configured for local development with:
+- SQLite database (for easy local setup)
+- Django development server
+- Static file serving
+- Debug mode enabled
 
 ## 📄 License
 

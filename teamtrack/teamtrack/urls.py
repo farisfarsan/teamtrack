@@ -4,8 +4,6 @@ from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
-from .health import health_check
-from .keep_alive import keep_alive_ping
 
 def root_redirect(request):
     """Redirect root URL to dashboard"""
@@ -16,10 +14,6 @@ def favicon_view(request):
     return HttpResponse(status=204)
 
 urlpatterns = [
-    # Health check and keep-alive
-    path("health/", health_check, name="health_check"),
-    path("keep-alive/", keep_alive_ping, name="keep_alive"),
-    
     # Core
     path("", root_redirect, name="root"),
     path("favicon.ico", favicon_view, name="favicon"),

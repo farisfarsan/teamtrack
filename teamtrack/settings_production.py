@@ -1,11 +1,7 @@
 from pathlib import Path
 import os
-import sys
 import dj_database_url
 from dotenv import load_dotenv
-
-# Add teamtrack directory to Python path
-sys.path.insert(0, str(Path(__file__).resolve().parent / "teamtrack"))
 
 # Load environment variables
 load_dotenv()
@@ -13,12 +9,18 @@ load_dotenv()
 # ---------------------------------------------------------
 # BASE SETTINGS
 # ---------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-for-development-only-change-in-production")
-DEBUG = os.getenv("DEBUG", "True") == "True"
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app']
-ALLOWED_HOSTS = ['.ngrok-free.app', '127.0.0.1', 'localhost']
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+# PythonAnywhere specific hosts
+ALLOWED_HOSTS = [
+    'yourusername.pythonanywhere.com',
+    'www.yourusername.pythonanywhere.com',
+    '127.0.0.1',
+    'localhost'
+]
 
 # ---------------------------------------------------------
 # APPLICATIONS
@@ -37,7 +39,6 @@ INSTALLED_APPS = [
 
     # Local apps
     "accounts",
-    "core",
     "tasks",
     "notifications",
     "dashboard",
@@ -61,12 +62,12 @@ MIDDLEWARE = [
 # ---------------------------------------------------------
 # URLS / WSGI
 # ---------------------------------------------------------
-ROOT_URLCONF = "urls"
+ROOT_URLCONF = "teamtrack.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates", BASE_DIR / "teamtrack" / "templates"],  # global templates folder
+        "DIRS": [BASE_DIR / "templates"],  # global templates folder
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -79,20 +80,38 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "wsgi.application"
+WSGI_APPLICATION = "teamtrack.wsgi.application"
 
 # ---------------------------------------------------------
-# DATABASE
+# DATABASE - PythonAnywhere MySQL Configuration
 # ---------------------------------------------------------
-DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", 
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Use environment variable or fallback to MySQL for PythonAnywhere
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Fallback MySQL configuration for PythonAnywhere
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'yourusername$teamtrack',
+            'USER': 'yourusername',
+            'PASSWORD': 'your_mysql_password',
+            'HOST': 'yourusername.mysql.pythonanywhere.com',
+            'PORT': '3306',
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
 
-# Database optimization settings (SQLite compatible)
+# Database optimization settings
 DATABASES['default']['OPTIONS'] = {
     'timeout': 20,
 }
@@ -116,23 +135,20 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------------------------------------------
-# STATIC / MEDIA FILES
+# STATIC / MEDIA FILES - PythonAnywhere Configuration
 # ---------------------------------------------------------
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = "/home/yourusername/teamtrack/staticfiles/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = "/home/yourusername/teamtrack/media/"
 
 # ---------------------------------------------------------
 # CUSTOM USER MODEL
 # ---------------------------------------------------------
 AUTH_USER_MODEL = "accounts.User"
-LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/dashboard/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # ---------------------------------------------------------
 # DEFAULT PRIMARY KEY FIELD TYPE
@@ -140,7 +156,7 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---------------------------------------------------------
-# DJANGO REST FRAMEWORK (optional basic config)
+# DJANGO REST FRAMEWORK
 # ---------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -180,27 +196,65 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
 SESSION_COOKIE_AGE = 86400  # 24 hours
 
-# Security optimizations
+# Security optimizations for production
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
-# Logging optimization
+# ---------------------------------------------------------
+# LOGGING - Production Configuration
+# ---------------------------------------------------------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "file": {
-            "level": "INFO",
+            "level": "ERROR",
             "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
+            "filename": "/home/yourusername/teamtrack/logs/django.log",
+            "formatter": "verbose",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
+            "handlers": ["file", "console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+        "teamtrack": {
+            "handlers": ["file", "console"],
             "level": "INFO",
             "propagate": True,
         },
     },
 }
+
+# ---------------------------------------------------------
+# EMAIL CONFIGURATION (Optional)
+# ---------------------------------------------------------
+# Uncomment and configure if you need email functionality
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
+# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
