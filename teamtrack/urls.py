@@ -19,10 +19,6 @@ def keep_alive_view(request):
     from teamtrack.simple_health import simple_keep_alive
     return simple_keep_alive(request)
 
-def health_view(request):
-    """Health check endpoint for PythonAnywhere"""
-    from teamtrack.health import health_check
-    return health_check(request)
 
 def recovery_view(request):
     """Manual recovery endpoint for testing"""
@@ -48,7 +44,6 @@ urlpatterns = [
     path("", root_redirect, name="root"),
     path("favicon.ico", favicon_view, name="favicon"),
     path("keep-alive/", keep_alive_view, name="keep_alive"),
-    path("health/", health_view, name="health"),
     path("recovery/", recovery_view, name="recovery"),
     path("admin/", admin.site.urls),
 
